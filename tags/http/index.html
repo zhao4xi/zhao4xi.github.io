@@ -6,18 +6,18 @@
   <meta name="keywords" content>
   <meta name="description" content="Zhaoxi Blooooooooog">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
-<meta name="keywords" content="http">
+<meta name="description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
+<meta name="keywords" content="ioc,循环依赖">
 <meta property="og:type" content="article">
-<meta property="og:title" content="https和http的区别与比较">
-<meta property="og:url" content="http://zhao4xi.github.io/2019/09/15/https和http的区别与比较/index.html">
+<meta property="og:title" content="ioc循环依赖的发现与解决">
+<meta property="og:url" content="http://zhao4xi.github.io/2019/09/16/ioc循环依赖的发现与解决/index.html">
 <meta property="og:site_name" content="Zhaoxi Blooooooooog">
-<meta property="og:description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
+<meta property="og:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
 <meta property="og:locale" content="cn-ZH">
-<meta property="og:updated_time" content="2019-09-15T01:51:03.327Z">
+<meta property="og:updated_time" content="2019-09-16T12:31:29.797Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="https和http的区别与比较">
-<meta name="twitter:description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
+<meta name="twitter:title" content="ioc循环依赖的发现与解决">
+<meta name="twitter:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
 
 
 <link rel="icon" href="/img/avatar.jpg">
@@ -100,11 +100,11 @@
 
 
 <ul>
-    <li><div class="all active">全部文章<small>(3)</small></div></li>
+    <li><div class="all active">全部文章<small>(2)</small></div></li>
     
         
             
-            <li><div data-rel="Test">Test<small>(1)</small></div>
+            <li><div data-rel="协议">协议<small>(1)</small></div>
                 
             </li>
             
@@ -112,7 +112,7 @@
     
         
             
-            <li><div data-rel="协议">协议<small>(1)</small></div>
+            <li><div data-rel="IOC">IOC<small>(1)</small></div>
                 
             </li>
             
@@ -128,8 +128,8 @@
     </div>
     <div><a  class="friends">友链</a></div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="3">
-<input type="hidden" id="yelog_site_word_count" value="601">
+<input type="hidden" id="yelog_site_posts_number" value="2">
+<input type="hidden" id="yelog_site_word_count" value="1.8k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -163,11 +163,19 @@
     <div class="tags-list">
     
     <li class="article-tag-list-item">
-        <a href="javascript:" class="color5">test</a>
+        <a href="javascript:" class="color5">http</a>
     </li>
     
     <li class="article-tag-list-item">
-        <a href="javascript:" class="color5">http</a>
+        <a href="javascript:" class="color1">https</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">ioc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">循环依赖</a>
     </li>
     
     <div class="clearfix"></div>
@@ -180,28 +188,20 @@
     
     <nav id="title-list-nav">
         
-        <a  class="Test "
-           href="/2019/09/13/blog-test/"
-           data-tag="test"
-           data-author="" >
-            <span class="post-title" title="blog test">blog test</span>
-            <span class="post-date" title="2019-09-13 10:32:38">2019/09/13</span>
-        </a>
-        
-        <a  class=""
-           href="/2019/09/13/hello-world/"
-           data-tag=""
-           data-author="" >
-            <span class="post-title" title="Hello World">Hello World</span>
-            <span class="post-date" title="2019-09-13 21:12:05">2019/09/13</span>
-        </a>
-        
         <a  class="协议 "
-           href="/2019/09/15/https和http的区别与比较/"
-           data-tag="http"
+           href="/2019/01/28/https和http的区别与比较/"
+           data-tag="http,https"
            data-author="" >
             <span class="post-title" title="https和http的区别与比较">https和http的区别与比较</span>
-            <span class="post-date" title="2019-09-15 09:37:25">2019/09/15</span>
+            <span class="post-date" title="2019-01-28 09:37:25">2019/01/28</span>
+        </a>
+        
+        <a  class="IOC "
+           href="/2019/09/16/ioc循环依赖的发现与解决/"
+           data-tag="ioc,循环依赖"
+           data-author="" >
+            <span class="post-title" title="ioc循环依赖的发现与解决">ioc循环依赖的发现与解决</span>
+            <span class="post-date" title="2019-09-16 10:30:51">2019/09/16</span>
         </a>
         
     </nav>
@@ -273,7 +273,7 @@
     /*作者、标签的自动补全*/
     $(function () {
         $('.search').AutoComplete({
-            'data': ['#test','#http',],
+            'data': ['#http','#https','#ioc','#循环依赖',],
             'itemHeight': 20,
             'width': 418
         }).AutoComplete('show');

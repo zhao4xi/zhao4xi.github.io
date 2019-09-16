@@ -2,22 +2,22 @@
 <html>
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
-  <title>Hello World | Zhaoxi Blooooooooog</title>
+  <title>Zhaoxi Blooooooooog</title>
   <meta name="keywords" content>
-  <meta name="description" content="Hello World | Zhaoxi Blooooooooog">
+  <meta name="description" content="Zhaoxi Blooooooooog">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
-<meta name="keywords" content="http">
+<meta name="description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
+<meta name="keywords" content="ioc,循环依赖">
 <meta property="og:type" content="article">
-<meta property="og:title" content="https和http的区别与比较">
-<meta property="og:url" content="http://zhao4xi.github.io/2019/09/15/https和http的区别与比较/index.html">
+<meta property="og:title" content="ioc循环依赖的发现与解决">
+<meta property="og:url" content="http://zhao4xi.github.io/2019/09/16/ioc循环依赖的发现与解决/index.html">
 <meta property="og:site_name" content="Zhaoxi Blooooooooog">
-<meta property="og:description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
+<meta property="og:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
 <meta property="og:locale" content="cn-ZH">
-<meta property="og:updated_time" content="2019-09-15T01:51:03.327Z">
+<meta property="og:updated_time" content="2019-09-16T12:31:29.797Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="https和http的区别与比较">
-<meta name="twitter:description" content="http是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.特点:   简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型 无状态, 多次请求没有状态保持 无连接, 每次处理一个请求 端口 80不加密的, 任何内容都可能被伪装或者篡改  httpshttps = http + ssl加密 + 认证 + 完整性保护https就是将http">
+<meta name="twitter:title" content="ioc循环依赖的发现与解决">
+<meta name="twitter:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
 
 
 <link rel="icon" href="/img/avatar.jpg">
@@ -53,7 +53,7 @@
 </div>
 
 <body>
-<aside class="nav">
+<aside class="nav mobile">
     <div class="nav-left">
         <a href="/" class="avatar_target">
     <img class="avatar" src="/img/avatar.jpg" />
@@ -100,11 +100,11 @@
 
 
 <ul>
-    <li><div class="all active">全部文章<small>(3)</small></div></li>
+    <li><div class="all active">全部文章<small>(2)</small></div></li>
     
         
             
-            <li><div data-rel="Test">Test<small>(1)</small></div>
+            <li><div data-rel="协议">协议<small>(1)</small></div>
                 
             </li>
             
@@ -112,7 +112,7 @@
     
         
             
-            <li><div data-rel="协议">协议<small>(1)</small></div>
+            <li><div data-rel="IOC">IOC<small>(1)</small></div>
                 
             </li>
             
@@ -128,8 +128,8 @@
     </div>
     <div><a  class="friends">友链</a></div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="3">
-<input type="hidden" id="yelog_site_word_count" value="601">
+<input type="hidden" id="yelog_site_posts_number" value="2">
+<input type="hidden" id="yelog_site_word_count" value="1.8k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -163,11 +163,19 @@
     <div class="tags-list">
     
     <li class="article-tag-list-item">
-        <a href="javascript:" class="color5">test</a>
+        <a href="javascript:" class="color5">http</a>
     </li>
     
     <li class="article-tag-list-item">
-        <a href="javascript:" class="color5">http</a>
+        <a href="javascript:" class="color1">https</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">ioc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">循环依赖</a>
     </li>
     
     <div class="clearfix"></div>
@@ -180,28 +188,20 @@
     
     <nav id="title-list-nav">
         
-        <a  class="Test "
-           href="/2019/09/13/blog-test/"
-           data-tag="test"
-           data-author="" >
-            <span class="post-title" title="blog test">blog test</span>
-            <span class="post-date" title="2019-09-13 10:32:38">2019/09/13</span>
-        </a>
-        
-        <a  class=""
-           href="/2019/09/13/hello-world/"
-           data-tag=""
-           data-author="" >
-            <span class="post-title" title="Hello World">Hello World</span>
-            <span class="post-date" title="2019-09-13 21:12:05">2019/09/13</span>
-        </a>
-        
         <a  class="协议 "
-           href="/2019/09/15/https和http的区别与比较/"
-           data-tag="http"
+           href="/2019/01/28/https和http的区别与比较/"
+           data-tag="http,https"
            data-author="" >
             <span class="post-title" title="https和http的区别与比较">https和http的区别与比较</span>
-            <span class="post-date" title="2019-09-15 09:37:25">2019/09/15</span>
+            <span class="post-date" title="2019-01-28 09:37:25">2019/01/28</span>
+        </a>
+        
+        <a  class="IOC "
+           href="/2019/09/16/ioc循环依赖的发现与解决/"
+           data-tag="ioc,循环依赖"
+           data-author="" >
+            <span class="post-title" title="ioc循环依赖的发现与解决">ioc循环依赖的发现与解决</span>
+            <span class="post-date" title="2019-09-16 10:30:51">2019/09/16</span>
         </a>
         
     </nav>
@@ -214,45 +214,12 @@
         </div>
     </div>
 </aside>
-<div class="post">
+<div class="post index">
     <div class="pjax">
-        <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+        <article class="index">
+            <div class="toc-ref">
     
-        <h1 class="article-title">Hello World</h1>
-    
-    <div class="article-meta">
-        
-        
-        
-        
-    </div>
-    <div class="article-meta">
-        
-        创建时间:<time class="date" title='更新时间: 2019-09-13 10:08:52'>2019-09-13 21:12</time>
-        
-    </div>
-    <div class="article-meta">
-        
-        <span>字数:75</span>
-        
-        
-        <span id="busuanzi_container_page_pv">
-            阅读:<span id="busuanzi_value_page_pv">
-                <span class="count-comment">
-                    <span class="spinner">
-                      <div class="cube1"></div>
-                      <div class="cube2"></div>
-                    </span>
-                </span>
-            </span>
-        </span>
-        
-        
-    </div>
-    
-    <div class="toc-ref">
-    
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#博客的意义"><span class="toc-text">博客的意义</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#博客的理解"><span class="toc-text">博客的理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#博客平台"><span class="toc-text">博客平台</span></a></li></ol></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -265,46 +232,19 @@
     }
 </style>
 </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;</code></pre>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server</code></pre>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate</code></pre>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy</code></pre>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+            <h1 id="博客的意义"><a href="#博客的意义" class="headerlink" title="博客的意义"></a>博客的意义</h1><h2 id="博客的理解"><a href="#博客的理解" class="headerlink" title="博客的理解"></a>博客的理解</h2><blockquote>
+<p>碎片化的思维跳跃</p>
+</blockquote>
+<blockquote>
+<p>严谨的知识求知欲</p>
+</blockquote>
+<p>不管是哪种都有必要快速的记录及回顾, 做到自己掌控雷电.</p>
+<h2 id="博客平台"><a href="#博客平台" class="headerlink" title="博客平台"></a>博客平台</h2><p>这个博客通过 <a href="https://hexo.io/">Hexo</a> 生成，部署在 <a href="https://pages.github.com/">GitHub Pages</a>，主题 <a href="https://github.com/yelog/hexo-theme-3-hexo">3-hexo</a> 已经在github上开源</p>
+<p>到目前为止已经写了<code class="article_number"></code>篇文章， 共<code class="site_word_count"></code>字。</p>
 
-      
-       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
-    </div>
-</article>
-
-
-
-<div class="article_copyright">
-    <p><span class="copy-title">文章标题:</span>Hello World</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">75</span></p>
-    <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
-    <p><span class="copy-title">发布时间:</span>2019-09-13, 21:12:05</p>
-    <p><span class="copy-title">最后更新:</span>2019-09-13, 10:08:52</p>
-    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/09/13/hello-world/" title="Hello World">http://zhao4xi.github.io/2019/09/13/hello-world/</a>
-    <p>
-        <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
-    </p>
-</div>
-
-
-
-
-
-    
-
-
-
-
+        </article>
+        
+        
     </div>
     <div class="copyright">
         <p class="footer-entry">©2016-2019 Zhaoxi</p>
@@ -333,7 +273,7 @@
     /*作者、标签的自动补全*/
     $(function () {
         $('.search').AutoComplete({
-            'data': ['#test','#http',],
+            'data': ['#http','#https','#ioc','#循环依赖',],
             'itemHeight': 20,
             'width': 418
         }).AutoComplete('show');

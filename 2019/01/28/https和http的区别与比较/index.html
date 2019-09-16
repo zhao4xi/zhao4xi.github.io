@@ -2,9 +2,9 @@
 <html>
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
-  <title>Zhaoxi Blooooooooog</title>
-  <meta name="keywords" content>
-  <meta name="description" content="Zhaoxi Blooooooooog">
+  <title>https和http的区别与比较 | Zhaoxi Blooooooooog</title>
+  <meta name="keywords" content=" http , https ">
+  <meta name="description" content="https和http的区别与比较 | Zhaoxi Blooooooooog">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
 <meta name="keywords" content="ioc,循环依赖">
@@ -53,7 +53,7 @@
 </div>
 
 <body>
-<aside class="nav mobile">
+<aside class="nav">
     <div class="nav-left">
         <a href="/" class="avatar_target">
     <img class="avatar" src="/img/avatar.jpg" />
@@ -214,12 +214,59 @@
         </div>
     </div>
 </aside>
-<div class="post index">
+<div class="post">
     <div class="pjax">
-        <article class="index">
-            <div class="toc-ref">
+        <article id="post-https和http的区别与比较" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#博客的意义"><span class="toc-text">博客的意义</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#博客的理解"><span class="toc-text">博客的理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#博客平台"><span class="toc-text">博客平台</span></a></li></ol></li></ol>
+        <h1 class="article-title">https和http的区别与比较</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            
+                <a href="javascript:" data-rel="协议">协议</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            
+            <a href="javascript:" class="color5">http</a>
+            
+            <a href="javascript:" class="color1">https</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+        创建时间:<time class="date" title='更新时间: 2019-09-16 20:26:55'>2019-01-28 09:37</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        <span>字数:509</span>
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读:<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#http"><span class="toc-text">http</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#https"><span class="toc-text">https</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-TSL-传输层安全协议"><span class="toc-text">SSL(TSL 传输层安全协议)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结区别"><span class="toc-text">总结区别</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -232,19 +279,71 @@
     }
 </style>
 </div>
-            <h1 id="博客的意义"><a href="#博客的意义" class="headerlink" title="博客的意义"></a>博客的意义</h1><h2 id="博客的理解"><a href="#博客的理解" class="headerlink" title="博客的理解"></a>博客的理解</h2><blockquote>
-<p>碎片化的思维跳跃</p>
-</blockquote>
-<blockquote>
-<p>严谨的知识求知欲</p>
-</blockquote>
-<p>不管是哪种都有必要快速的记录及回顾, 做到自己掌控雷电.</p>
-<h2 id="博客平台"><a href="#博客平台" class="headerlink" title="博客平台"></a>博客平台</h2><p>这个博客通过 <a href="https://hexo.io/">Hexo</a> 生成，部署在 <a href="https://pages.github.com/">GitHub Pages</a>，主题 <a href="https://github.com/yelog/hexo-theme-3-hexo">3-hexo</a> 已经在github上开源</p>
-<p>到目前为止已经写了<code class="article_number"></code>篇文章， 共<code class="site_word_count"></code>字。</p>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.<br>特点: </p>
+<ol>
+<li>简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型</li>
+<li>无状态, 多次请求没有状态保持</li>
+<li>无连接, 每次处理一个请求</li>
+<li>端口 80<br>不加密的, 任何内容都可能被伪装或者篡改</li>
+</ol>
+<h2 id="https"><a href="#https" class="headerlink" title="https"></a>https</h2><p>https = http + ssl加密 + 认证 + 完整性保护<br>https就是将http与tcp通信中层添加了一个ssl/tsl加密变成 http-&gt;ssl/tsl-&gt;tcp</p>
+<p>特点:</p>
+<ol>
+<li>继承了http的所有特点</li>
+<li>接口层使用了http和tcp直接新增了ssl/tsl协议(tsl 是 ssl 标准化后的名字)</li>
+<li>因为ssl/tsl (引入了 证书/私钥/公钥)加密会耗费服务器资源, 所以默认提供http.</li>
+<li>端口443<br>加密, 相对http较安全</li>
+</ol>
+<h2 id="SSL-TSL-传输层安全协议"><a href="#SSL-TSL-传输层安全协议" class="headerlink" title="SSL(TSL 传输层安全协议)"></a>SSL(TSL 传输层安全协议)</h2><p>安全套接层 基于 应用层和TCP层协议之间, 为数据通信提供安全组支持.<br>主要工作流程:</p>
+<ol>
+<li>客户端想服务器索要公钥<ol>
+<li>判定公钥的证书是否由受信任的CA机构签发,是否有效等, 不是提示警告</li>
+</ol>
+</li>
+<li>使用公钥加密一个随机值(私钥)发送给服务端</li>
+<li>服务端使用私钥解密保存这个随机值, 双方基于这个随机值进行对称加密通信</li>
+<li>服务器端使用随机值加密返回数据</li>
+<li>客户端使用随机值解密<br>简化过程就是:</li>
+<li>客户端向服务器端索要并验证公钥</li>
+<li>双方协商生成”回话秘钥”</li>
+<li>双方采用”回话秘钥”进行加密通信</li>
+</ol>
+<h2 id="总结区别"><a href="#总结区别" class="headerlink" title="总结区别"></a>总结区别</h2><ol>
+<li>http 连接简单, 无状态, 明文传输; https 由SSL+http构建加密传输+ 身份认证, 比较安全, 但由于加密的缘故, 所以相对耗费资源.</li>
+<li>http 和 https 连接方式不一致, http默认使用80端口, https使用443端口.</li>
+<li>https 协议确认到ca证书, 需要一定费用.</li>
+</ol>
 
-        </article>
-        
-        
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
+    </div>
+</article>
+
+
+
+<div class="article_copyright">
+    <p><span class="copy-title">文章标题:</span>https和http的区别与比较</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">509</span></p>
+    <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
+    <p><span class="copy-title">发布时间:</span>2019-01-28, 09:37:25</p>
+    <p><span class="copy-title">最后更新:</span>2019-09-16, 20:26:55</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/01/28/https和http的区别与比较/" title="https和http的区别与比较">http://zhao4xi.github.io/2019/01/28/https和http的区别与比较/</a>
+    <p>
+        <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+    </p>
+</div>
+
+
+
+
+
+    
+
+
+
+
     </div>
     <div class="copyright">
         <p class="footer-entry">©2016-2019 Zhaoxi</p>

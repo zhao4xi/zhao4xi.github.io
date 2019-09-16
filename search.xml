@@ -4,9 +4,36 @@
   
     
     <entry>
+      <title>ioc循环依赖的发现与解决</title>
+      <link href="/2019/09/16/ioc%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%8F%91%E7%8E%B0%E4%B8%8E%E8%A7%A3%E5%86%B3/"/>
+      <url>/2019/09/16/ioc%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%8F%91%E7%8E%B0%E4%B8%8E%E8%A7%A3%E5%86%B3/</url>
+      
+        <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程.</p><h2 id="场景介绍"><a href="#场景介绍" class="headerlink" title="场景介绍"></a>场景介绍</h2><p>A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:</p><pre><code class="csharp">    public class ServiceA : IServiceA    {        private readonly IServiceB _serviceB;        public ServiceA(IServiceB serviceB)        {            _serviceB = serviceB;        }    }    public interface IServiceA {}    public class ServiceB : IServiceB    {        private readonly IServiceA _serviceA;        public ServiceB(IServiceA serviceA)        {            _serviceA = serviceA;        }    }    public interface IServiceB {}</code></pre><h2 id="第一次讨论"><a href="#第一次讨论" class="headerlink" title="第一次讨论"></a>第一次讨论</h2><p>因为.net中通常使用构造函数注入, 如果出现循环依赖, 那么第一步考虑的就是拆分服务A或者服务B, 将互调部分拆分出一个服务AB, 专门处理互调业务. demo代码:</p><pre><code class="csharp">    public class ServiceAB : IServiceAB    {        private readonly IServiceA _serviceA;        private readonly IServiceB _serviceB;        public ServiceB(IServiceA serviceA, IServiceB serviceB)        {            _serviceA = serviceA;            _serviceB = serviceB;        }    }    public interface IServiceAB {}</code></pre><p><strong>优点</strong>: 每个服务的作用比较独立和内聚, 也很简单的解决了循环依赖的问题.<br><strong>缺点</strong>: 在实际操作中拆分的规则和粒度很难把握, 会增加一些重复代码.</p><h2 id="讨论后的探索"><a href="#讨论后的探索" class="headerlink" title="讨论后的探索"></a>讨论后的探索</h2><p>因为Spring中使用常用注解[AutoWired]来进行注入, 且使用的是字段注入, 不会存在循环依赖的问题, 所以探索在Autofac中是否可以使用属性注入来解决这个问题, 尝试后发现可行, demo代码:</p><pre><code class="csharp">    public class ServiceA : IServiceA    {        [AutofacInject]        public IServiceB ServiceBImp {get; set;}    }    public class ServiceB : IServiceB    {        [AutofacInject]        public IServiceA ServiceAImp {get; set;}    }    //注入方式, Autofac 版本4.6.2    builder.RegisterType&lt;ServiceB&gt;().As&lt;IServiceB&gt;().SingleInstance().PropertiesAutowired(new PropertySelector(), true);    builder.RegisterType&lt;ServiceA&gt;().As&lt;IServiceA&gt;().SingleInstance().PropertiesAutowired(new PropertySelector(), true);    /// &lt;summary&gt;    /// Autofac 是否自动注入特性     /// &lt;/summary&gt;    public class AutofacInjectAttribute : Attribute    {        public bool Inject { get; set; } = true;         public AutofacInjectAttribute(bool inject = true)        {            Inject = inject;        }    }    public class PropertySelector : IPropertySelector    {        public bool InjectProperty(PropertyInfo propertyInfo, object instance)        {            var autofacInjectAttr = propertyInfo.GetCustomAttributes().FirstOrDefault(p =&gt; p.GetType() == typeof(AutofacInjectAttribute)) as AutofacInjectAttribute;            if (autofacInjectAttr == null)            {                return false;            }            return autofacInjectAttr.Inject;        }    }</code></pre><p>到此为止, 需求已经能完全满足我们的重构, 现在还留下了2个问题需要解决, ioc容器如何发现的循环依赖和属性注入如何解决循环依赖?</p><h2 id="ioc容器如何发现循环依赖"><a href="#ioc容器如何发现循环依赖" class="headerlink" title="ioc容器如何发现循环依赖"></a>ioc容器如何发现循环依赖</h2><p>在Autofac源码中, ResolveOperation.GetOrCreateInstance 方法中找到了答案, 下面是 GetOrCreateInstance的执行过程</p><ol><li>当前递归的层级加1</li><li>判定递归stack是否有循环依赖<ol><li>循环依赖条件1: 递归层级大于等于50</li><li>循环依赖条件2: 递归链上存在当前需要构造的对象</li></ol></li><li>构造对象</li><li>将步骤3构造的对象push到递归stack中</li><li>当前对象构造完成pop递归stack</li><li>递归层级减1</li></ol><pre><code class="csharp">    public object GetOrCreateInstance(ISharingLifetimeScope currentOperationScope, ResolveRequest request)    {        if (_ended) throw new ObjectDisposedException(ResolveOperationResources.TemporaryContextDisposed, innerException: null);        ++_callDepth;        if (_activationStack.Count &gt; 0)            CircularDependencyDetector.CheckForCircularDependency(request.Registration, _activationStack, _callDepth);        var activation = new InstanceLookup(this, currentOperationScope, request);        _activationStack.Push(activation);        var handler = InstanceLookupBeginning;        handler?.Invoke(this, new InstanceLookupBeginningEventArgs(activation));        try        {            var instance = activation.Execute();            _successfulActivations.Add(activation);            return instance;        }        finally        {             _activationStack.Pop();            if (_activationStack.Count == 0)            {                CompleteActivations();            }            --_callDepth;        }    }    public static void CheckForCircularDependency(IComponentRegistration registration, Stack&lt;InstanceLookup&gt; activationStack, int callDepth)    {        if (registration == null) throw new ArgumentNullException(nameof(registration));        if (callDepth &gt; MaxResolveDepth)            throw new DependencyResolutionException(string.Format(CultureInfo.CurrentCulture, CircularDependencyDetectorResources.MaxDepthExceeded, registration));        // Checks for circular dependency        foreach (var a in activationStack)        {            if (a.ComponentRegistration == registration)            {                throw new DependencyResolutionException(string.Format(CultureInfo.CurrentCulture, CircularDependencyDetectorResources.CircularDependency, CreateDependencyGraphTo(registration, activationStack)));            }        }    }</code></pre><h2 id="属性注入如何解决循环依赖"><a href="#属性注入如何解决循环依赖" class="headerlink" title="属性注入如何解决循环依赖"></a>属性注入如何解决循环依赖</h2><p>属性注入的解决依赖的前提: 1. 被循环依赖的属性比如是单例注入的; 2. 允许循环依赖 </p><pre><code class="csharp">    var serviceA = container.Resolve&lt;ServiceA&gt;(); </code></pre><p>下面是单例注入的执行步骤:</p><ol><li>获取ServiceA的实例, 因为注入方式是单例, 所以会缓存ServiceA的对象到_sharedInstances字典中.</li><li>解析ServiceA的属性IServiceB, 尝试从缓存_sharedInstances字典中查找, 如果找到直接赋值给属性并返回.</li><li>如果没有找到, 再构造一个ServiceB的实例缓存到_sharedInstances字典中, 并赋值给属性并返回.</li></ol><h2 id="隔壁Java-Spring如何解决循环依赖"><a href="#隔壁Java-Spring如何解决循环依赖" class="headerlink" title="隔壁Java Spring如何解决循环依赖"></a>隔壁Java Spring如何解决循环依赖</h2><p>核心思想相同, 都是需要缓存并未填充属性的单例对象, earlySingletonObjects 和 _sharedInstances 这两个集合对象的作用相同.</p><ol><li>singletonObject : 用于存放完全初始化好的bean, 从缓存中直接获取</li><li>earlySingletonObjects: 存放原始的bean对象(尚未填充属性), 用于解决循环依赖</li><li>singletonFactories: 存放bean工厂对象, 用于解决循环依赖</li></ol><h2 id="简单的循环依赖IOC处理Demo"><a href="#简单的循环依赖IOC处理Demo" class="headerlink" title="简单的循环依赖IOC处理Demo"></a>简单的循环依赖IOC处理Demo</h2><pre><code class="csharp">    static void Main(string[] args)    {        TinyIoc.Register&lt;IServiceA, ServiceA&gt;();        TinyIoc.Register&lt;IServiceB, ServiceB&gt;();                var serviceA = TinyIoc.GetByProp&lt;IServiceA&gt;();    }    class TinyIoc    {        private static Dictionary&lt;Type, Type&gt; _typeImplDic = new Dictionary&lt;Type, Type&gt;();        private static Dictionary&lt;Type, object&gt; _instanceTypeDic = new Dictionary&lt;Type, object&gt;(); // singletonObject        private static Dictionary&lt;Type, object&gt; _earlyInstanceTypeDic = new Dictionary&lt;Type, object&gt;(); // earlySingletonObjects        public static object GetByProp(Type typeofT)        {            if (_instanceTypeDic.ContainsKey(typeofT))             {                return _instanceTypeDic[typeofT];            }            if (_earlyInstanceTypeDic.ContainsKey(typeofT))            {                return _earlyInstanceTypeDic[typeofT];            }            var typeImp = _typeImplDic[typeofT];            var impObj = Activator.CreateInstance(typeImp); //singletonFactories             _earlyInstanceTypeDic.Add(typeofT, impObj);            var propes = typeImp.GetProperties();            foreach (var item in propes)            {                item.SetValue(impObj, GetByProp(item.PropertyType));            }            _instanceTypeDic.Add(typeofT, typeImp);            return impObj;        }        public static T GetByProp&lt;T&gt;()        {            var typeofT = typeof(T);            return (T)GetByProp(typeofT);        }        public static void Register&lt;IT, T&gt;()        {            _typeImplDic.Add(typeof(IT), typeof(T));        }     } </code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>学习使我快落</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> IOC </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ioc </tag>
+            
+            <tag> 循环依赖 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>https和http的区别与比较</title>
-      <link href="/2019/09/15/https%E5%92%8Chttp%E7%9A%84%E5%8C%BA%E5%88%AB%E4%B8%8E%E6%AF%94%E8%BE%83/"/>
-      <url>/2019/09/15/https%E5%92%8Chttp%E7%9A%84%E5%8C%BA%E5%88%AB%E4%B8%8E%E6%AF%94%E8%BE%83/</url>
+      <link href="/2019/01/28/https%E5%92%8Chttp%E7%9A%84%E5%8C%BA%E5%88%AB%E4%B8%8E%E6%AF%94%E8%BE%83/"/>
+      <url>/2019/01/28/https%E5%92%8Chttp%E7%9A%84%E5%8C%BA%E5%88%AB%E4%B8%8E%E6%AF%94%E8%BE%83/</url>
       
         <content type="html"><![CDATA[<h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.<br>特点: </p><ol><li>简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型</li><li>无状态, 多次请求没有状态保持</li><li>无连接, 每次处理一个请求</li><li>端口 80<br>不加密的, 任何内容都可能被伪装或者篡改</li></ol><h2 id="https"><a href="#https" class="headerlink" title="https"></a>https</h2><p>https = http + ssl加密 + 认证 + 完整性保护<br>https就是将http与tcp通信中层添加了一个ssl/tsl加密变成 http-&gt;ssl/tsl-&gt;tcp</p><p>特点:</p><ol><li>继承了http的所有特点</li><li>接口层使用了http和tcp直接新增了ssl/tsl协议(tsl 是 ssl 标准化后的名字)</li><li>因为ssl/tsl (引入了 证书/私钥/公钥)加密会耗费服务器资源, 所以默认提供http.</li><li>端口443<br>加密, 相对http较安全</li></ol><h2 id="SSL-TSL-传输层安全协议"><a href="#SSL-TSL-传输层安全协议" class="headerlink" title="SSL(TSL 传输层安全协议)"></a>SSL(TSL 传输层安全协议)</h2><p>安全套接层 基于 应用层和TCP层协议之间, 为数据通信提供安全组支持.<br>主要工作流程:</p><ol><li>客户端想服务器索要公钥<ol><li>判定公钥的证书是否由受信任的CA机构签发,是否有效等, 不是提示警告</li></ol></li><li>使用公钥加密一个随机值(私钥)发送给服务端</li><li>服务端使用私钥解密保存这个随机值, 双方基于这个随机值进行对称加密通信</li><li>服务器端使用随机值加密返回数据</li><li>客户端使用随机值解密<br>简化过程就是:</li><li>客户端向服务器端索要并验证公钥</li><li>双方协商生成”回话秘钥”</li><li>双方采用”回话秘钥”进行加密通信</li></ol><h2 id="总结区别"><a href="#总结区别" class="headerlink" title="总结区别"></a>总结区别</h2><ol><li>http 连接简单, 无状态, 明文传输; https 由SSL+http构建加密传输+ 身份认证, 比较安全, 但由于加密的缘故, 所以相对耗费资源.</li><li>http 和 https 连接方式不一致, http默认使用80端口, https使用443端口.</li><li>https 协议确认到ca证书, 需要一定费用.</li></ol>]]></content>
       
@@ -20,45 +47,9 @@
       
         <tags>
             
-            <tag> http </tag> 
-
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Hello World</title>
-      <link href="/2019/09/13/hello-world/"/>
-      <url>/2019/09/13/hello-world/</url>
-      
-        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre><code class="bash">$ hexo new &quot;My New Post&quot;</code></pre><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre><code class="bash">$ hexo server</code></pre><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre><code class="bash">$ hexo generate</code></pre><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre><code class="bash">$ hexo deploy</code></pre><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-      
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>blog test</title>
-      <link href="/2019/09/13/blog-test/"/>
-      <url>/2019/09/13/blog-test/</url>
-      
-        <content type="html"><![CDATA[<h2 id="Test-Hello-World"><a href="#Test-Hello-World" class="headerlink" title="Test Hello World"></a>Test Hello World</h2><pre><code class="csharp">    using HelloWorldEx    {        static void Main(string[] args)        {            System.Console.Write(&quot;Hello World&quot;);        }    }</code></pre>]]></content>
-      
-      
-      <categories>
-          
-          <category> Test </category>
-          
-      </categories>
-      
-      
-        <tags>
+            <tag> http </tag>
             
-            <tag> test </tag>
+            <tag> https </tag>
             
         </tags>
       
