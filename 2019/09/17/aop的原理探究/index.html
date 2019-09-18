@@ -2,9 +2,9 @@
 <html>
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
-  <title>https和http的区别与比较 | Zhaoxi Blooooooooog</title>
-  <meta name="keywords" content=" http , https ">
-  <meta name="description" content="https和http的区别与比较 | Zhaoxi Blooooooooog">
+  <title>aop的原理探究 | Zhaoxi Blooooooooog</title>
+  <meta name="keywords" content=" aop ">
+  <meta name="description" content="aop的原理探究 | Zhaoxi Blooooooooog">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
 <meta name="keywords" content="aop">
@@ -228,9 +228,9 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-https和http的区别与比较" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-aop的原理探究" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">https和http的区别与比较</h1>
+        <h1 class="article-title">aop的原理探究</h1>
     
     <div class="article-meta">
         
@@ -238,28 +238,26 @@
         
         <span class="book">
             
-                <a href="javascript:" data-rel="协议">协议</a>
+                <a href="javascript:" data-rel="框架">框架</a>
             
         </span>
         
         
         <span class="tag">
             
-            <a href="javascript:" class="color5">http</a>
-            
-            <a href="javascript:" class="color1">https</a>
+            <a href="javascript:" class="color4">aop</a>
             
         </span>
         
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2019-09-16 20:26:55'>2019-01-28 09:37</time>
+        创建时间:<time class="date" title='更新时间: 2019-09-18 21:15:13'>2019-09-17 21:12</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:509</span>
+        <span>字数:693</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -278,7 +276,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#http"><span class="toc-text">http</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#https"><span class="toc-text">https</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSL-TSL-传输层安全协议"><span class="toc-text">SSL(TSL 传输层安全协议)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结区别"><span class="toc-text">总结区别</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aop-的分类"><span class="toc-text">aop 的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编译时AOP"><span class="toc-text">编译时AOP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行时AOP"><span class="toc-text">运行时AOP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#隔壁spring框架中的类比"><span class="toc-text">隔壁spring框架中的类比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#代码托管地址"><span class="toc-text">代码托管地址</span></a></li></ol></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -293,41 +291,147 @@
 </div>
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="http"><a href="#http" class="headerlink" title="http"></a>http</h2><p>是一个基于tcp/ip的应用层的的请求/响应式协议, 全称超文本传输协议.<br>特点: </p>
-<ol>
-<li>简单快速灵活, 常用方式 Post Get Put Delete , 支持多种传输数据类型</li>
-<li>无状态, 多次请求没有状态保持</li>
-<li>无连接, 每次处理一个请求</li>
-<li>端口 80<br>不加密的, 任何内容都可能被伪装或者篡改</li>
-</ol>
-<h2 id="https"><a href="#https" class="headerlink" title="https"></a>https</h2><p>https = http + ssl加密 + 认证 + 完整性保护<br>https就是将http与tcp通信中层添加了一个ssl/tsl加密变成 http-&gt;ssl/tsl-&gt;tcp</p>
-<p>特点:</p>
-<ol>
-<li>继承了http的所有特点</li>
-<li>接口层使用了http和tcp直接新增了ssl/tsl协议(tsl 是 ssl 标准化后的名字)</li>
-<li>因为ssl/tsl (引入了 证书/私钥/公钥)加密会耗费服务器资源, 所以默认提供http.</li>
-<li>端口443<br>加密, 相对http较安全</li>
-</ol>
-<h2 id="SSL-TSL-传输层安全协议"><a href="#SSL-TSL-传输层安全协议" class="headerlink" title="SSL(TSL 传输层安全协议)"></a>SSL(TSL 传输层安全协议)</h2><p>安全套接层 基于 应用层和TCP层协议之间, 为数据通信提供安全组支持.<br>主要工作流程:</p>
-<ol>
-<li>客户端想服务器索要公钥<ol>
-<li>判定公钥的证书是否由受信任的CA机构签发,是否有效等, 不是提示警告</li>
-</ol>
-</li>
-<li>使用公钥加密一个随机值(私钥)发送给服务端</li>
-<li>服务端使用私钥解密保存这个随机值, 双方基于这个随机值进行对称加密通信</li>
-<li>服务器端使用随机值加密返回数据</li>
-<li>客户端使用随机值解密<br>简化过程就是:</li>
-<li>客户端向服务器端索要并验证公钥</li>
-<li>双方协商生成”回话秘钥”</li>
-<li>双方采用”回话秘钥”进行加密通信</li>
-</ol>
-<h2 id="总结区别"><a href="#总结区别" class="headerlink" title="总结区别"></a>总结区别</h2><ol>
-<li>http 连接简单, 无状态, 明文传输; https 由SSL+http构建加密传输+ 身份认证, 比较安全, 但由于加密的缘故, 所以相对耗费资源.</li>
-<li>http 和 https 连接方式不一致, http默认使用80端口, https使用443端口.</li>
-<li>https 协议确认到ca证书, 需要一定费用.</li>
-</ol>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程.</p>
+<h2 id="aop-的分类"><a href="#aop-的分类" class="headerlink" title="aop 的分类"></a>aop 的分类</h2><p>aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.</p>
+<blockquote>
+<p>编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel + MSbuild, 也可以运行时AOP)<br>运行时AOP(动态代理), 常见框架 Castle, 主流 IOC 框架实现代理</p>
+</blockquote>
+<h2 id="编译时AOP"><a href="#编译时AOP" class="headerlink" title="编译时AOP"></a>编译时AOP</h2><p>根据名称可以知道, 这个过程发生在dll编译的时候. 编译时AOP是将织入的方法通过IL的方式直接写入编译的dll中. 这一点通过反编译postsharp 等工具的生成dll 可知<br><strong>优点</strong>: 整体效率比运行时要高, 功能强大.<br><strong>缺点</strong>: 修改代码需要重新通过专门的编译器编译, 操作相对复杂.</p>
+<h2 id="运行时AOP"><a href="#运行时AOP" class="headerlink" title="运行时AOP"></a>运行时AOP</h2><p>通常使用系统自带的反射机制或者第三方IOC框架在运行时动态执行需要织入的方法.<br><strong>优点</strong>: 核心思想和使用都比较简单<br><strong>缺点</strong>: 性能略低, 一般只适合方法的调用.<br>下面使用.net Remoting 来实现一个简单的 aop 功能</p>
+<pre><code class="csharp">    static void Main(string[] args)
+    {
+        var service = TinyAop.Create&lt;IServiceA, ServiceA&gt;(new LogInterceptor(), new ErrorInterceptor());
+        service.Say(&quot;hello world&quot;);
+        service.Error();
+        Console.Read();
+    }
 
+    interface IServiceA { void Say(string word); void Error(); }
+
+    public class ServiceA : IServiceA
+    {  
+        public void Error()
+        {
+            throw new Exception(&quot;出错啦&quot;);
+        }
+
+        public void Say(string word)
+        {
+            Console.WriteLine(word);
+        }
+    }
+
+    class LogInterceptor : Interceptor
+    {
+        public void Invoke(Invocation invocation)
+        {
+            try
+            {
+                Console.WriteLine(&quot;before log&quot;);
+                invocation.Proceed();
+                Console.WriteLine(&quot;after log&quot;);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException);
+                invocation.ReturnValue = &quot;出错啦&quot;;
+            }
+        }
+    }
+
+    class ErrorInterceptor : Interceptor
+    {
+        public void Invoke(Invocation invocation)
+        {
+            try
+            {
+                invocation.Proceed();
+            }
+            catch (Exception ex)
+            {
+                invocation.ReturnValue = &quot;出错啦&quot;;
+                Console.WriteLine(ex.InnerException);
+            }
+        }
+    }
+
+    class TinyAop
+    {
+        public static T Create&lt;IT, T&gt;(params Interceptor[] interceptors)
+        {
+            T instance = Activator.CreateInstance&lt;T&gt;();
+            RealProxyEx&lt;T&gt; realProxy = new RealProxyEx&lt;T&gt;(instance, interceptors);
+            T transparentProxy = (T)realProxy.GetTransparentProxy();
+            return transparentProxy;
+        }
+    }
+
+    class RealProxyEx&lt;T&gt; : RealProxy
+    {
+        private object _target;
+        private Interceptor[] _interceptors;
+
+        public RealProxyEx(object target, Interceptor[] interceptors) : base(typeof(T))
+        {
+            _target = target;
+            _interceptors = interceptors;
+        }
+
+        public override IMessage Invoke(IMessage msg)
+        {
+            Invocation invocation = new Invocation(msg, _target);
+            if (_interceptors != null &amp;&amp; _interceptors.Length &gt; 0)
+            {
+                foreach (var item in _interceptors)
+                {
+                    item.Invoke(invocation);
+                }
+            }
+            else
+            {
+                invocation.Proceed();
+            }
+            return new ReturnMessage(invocation.ReturnValue, new object[0], 0, null, invocation.CallMessage);
+        }
+    }
+
+    class Invocation
+    {
+        public MethodBase Method { get; set; }
+
+        public object ReturnValue { get; set; }
+
+        public IMethodCallMessage CallMessage =&gt; (IMethodCallMessage)_msg;
+
+        private IMessage _msg;
+
+        private object _target;
+
+        public Invocation(IMessage msg, object target)
+        {
+            _target = target;
+            _msg = msg;
+        }
+
+        public void Proceed()
+        {
+            IMethodCallMessage callMessage = (IMethodCallMessage)_msg;
+            Method = callMessage.MethodBase;
+            ReturnValue = Method.Invoke(_target, callMessage.Args);
+        }
+    }
+
+    interface Interceptor
+    {
+        void Invoke(Invocation invocation);
+    }
+
+</code></pre>
+<h2 id="隔壁spring框架中的类比"><a href="#隔壁spring框架中的类比" class="headerlink" title="隔壁spring框架中的类比"></a>隔壁spring框架中的类比</h2><blockquote>
+<p>编译时: AspectJ<br>运行时: jdk(一般代理接口), cglib (代理(重写)实现类)</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>AOP的思想比如何使用更重要, 仔细学习看看, 其实很简单.</p>
+<h3 id="代码托管地址"><a href="#代码托管地址" class="headerlink" title="代码托管地址"></a><a href="https://github.com/zhao4xi/TinyIocAndAop" target="_blank" rel="noopener">代码托管地址</a></h3>
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
     </div>
@@ -336,12 +440,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">文章标题:</span>https和http的区别与比较</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">509</span></p>
+    <p><span class="copy-title">文章标题:</span>aop的原理探究</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">693</span></p>
     <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
-    <p><span class="copy-title">发布时间:</span>2019-01-28, 09:37:25</p>
-    <p><span class="copy-title">最后更新:</span>2019-09-16, 20:26:55</p>
-    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/01/28/https和http的区别与比较/" title="https和http的区别与比较">http://zhao4xi.github.io/2019/01/28/https和http的区别与比较/</a>
+    <p><span class="copy-title">发布时间:</span>2019-09-17, 21:12:58</p>
+    <p><span class="copy-title">最后更新:</span>2019-09-18, 21:15:13</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/09/17/aop的原理探究/" title="aop的原理探究">http://zhao4xi.github.io/2019/09/17/aop的原理探究/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>

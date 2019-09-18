@@ -6,18 +6,18 @@
   <meta name="keywords" content=" ioc , 循环依赖 ">
   <meta name="description" content="ioc循环依赖的发现与解决 | Zhaoxi Blooooooooog">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
-<meta name="keywords" content="ioc,循环依赖">
+<meta name="description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+<meta name="keywords" content="aop">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ioc循环依赖的发现与解决">
-<meta property="og:url" content="http://zhao4xi.github.io/2019/09/16/ioc循环依赖的发现与解决/index.html">
+<meta property="og:title" content="aop的原理探究">
+<meta property="og:url" content="http://zhao4xi.github.io/2019/09/17/aop的原理探究/index.html">
 <meta property="og:site_name" content="Zhaoxi Blooooooooog">
-<meta property="og:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
+<meta property="og:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
 <meta property="og:locale" content="cn-ZH">
-<meta property="og:updated_time" content="2019-09-16T12:31:29.797Z">
+<meta property="og:updated_time" content="2019-09-18T13:15:13.828Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ioc循环依赖的发现与解决">
-<meta name="twitter:description" content="前言最近在重构代码, 为框架添加Autofac作为ioc容器, 在处理业务层时, 遇到不同Service相互依赖的问题, 俗称循环依赖. 后来经过讨论解决了这个问题, 这里记录一下我们的探索过程. 场景介绍A服务依赖于B服务作为构造函数的参数, B服务依赖于A服务作为构造函数的参数, demo代码如下:     public class ServiceA : IServiceA     {">
+<meta name="twitter:title" content="aop的原理探究">
+<meta name="twitter:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
 
 
 <link rel="icon" href="/img/avatar.jpg">
@@ -100,7 +100,7 @@
 
 
 <ul>
-    <li><div class="all active">全部文章<small>(2)</small></div></li>
+    <li><div class="all active">全部文章<small>(3)</small></div></li>
     
         
             
@@ -112,7 +112,7 @@
     
         
             
-            <li><div data-rel="IOC">IOC<small>(1)</small></div>
+            <li><div data-rel="框架">框架<small>(2)</small></div>
                 
             </li>
             
@@ -128,8 +128,8 @@
     </div>
     <div><a  class="friends">友链</a></div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="2">
-<input type="hidden" id="yelog_site_word_count" value="1.8k">
+<input type="hidden" id="yelog_site_posts_number" value="3">
+<input type="hidden" id="yelog_site_word_count" value="2.5k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -178,6 +178,10 @@
         <a href="javascript:" class="color5">循环依赖</a>
     </li>
     
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">aop</a>
+    </li>
+    
     <div class="clearfix"></div>
 </div>
 
@@ -196,12 +200,20 @@
             <span class="post-date" title="2019-01-28 09:37:25">2019/01/28</span>
         </a>
         
-        <a  class="IOC "
+        <a  class="框架 "
            href="/2019/09/16/ioc循环依赖的发现与解决/"
            data-tag="ioc,循环依赖"
            data-author="" >
             <span class="post-title" title="ioc循环依赖的发现与解决">ioc循环依赖的发现与解决</span>
             <span class="post-date" title="2019-09-16 10:30:51">2019/09/16</span>
+        </a>
+        
+        <a  class="框架 "
+           href="/2019/09/17/aop的原理探究/"
+           data-tag="aop"
+           data-author="" >
+            <span class="post-title" title="aop的原理探究">aop的原理探究</span>
+            <span class="post-date" title="2019-09-17 21:12:58">2019/09/17</span>
         </a>
         
     </nav>
@@ -226,7 +238,7 @@
         
         <span class="book">
             
-                <a href="javascript:" data-rel="IOC">IOC</a>
+                <a href="javascript:" data-rel="框架">框架</a>
             
         </span>
         
@@ -242,12 +254,12 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2019-09-16 20:31:29'>2019-09-16 10:30</time>
+        创建时间:<time class="date" title='更新时间: 2019-09-18 21:14:07'>2019-09-16 10:30</time>
         
     </div>
     <div class="article-meta">
         
-        <span>字数:1.2k</span>
+        <span>字数:1.3k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -266,7 +278,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#场景介绍"><span class="toc-text">场景介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一次讨论"><span class="toc-text">第一次讨论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#讨论后的探索"><span class="toc-text">讨论后的探索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ioc容器如何发现循环依赖"><span class="toc-text">ioc容器如何发现循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#属性注入如何解决循环依赖"><span class="toc-text">属性注入如何解决循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#隔壁Java-Spring如何解决循环依赖"><span class="toc-text">隔壁Java Spring如何解决循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简单的循环依赖IOC处理Demo"><span class="toc-text">简单的循环依赖IOC处理Demo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#场景介绍"><span class="toc-text">场景介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#第一次讨论"><span class="toc-text">第一次讨论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#讨论后的探索"><span class="toc-text">讨论后的探索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ioc容器如何发现循环依赖"><span class="toc-text">ioc容器如何发现循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#属性注入如何解决循环依赖"><span class="toc-text">属性注入如何解决循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#隔壁Java-Spring如何解决循环依赖"><span class="toc-text">隔壁Java Spring如何解决循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#简单的循环依赖IOC处理Demo"><span class="toc-text">简单的循环依赖IOC处理Demo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#代码托管地址"><span class="toc-text">代码托管地址</span></a></li></ol></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -479,7 +491,7 @@
         } 
     } </code></pre>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>学习使我快落</p>
-
+<h3 id="代码托管地址"><a href="#代码托管地址" class="headerlink" title="代码托管地址"></a><a href="https://github.com/zhao4xi/TinyIocAndAop" target="_blank" rel="noopener">代码托管地址</a></h3>
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
     </div>
@@ -489,10 +501,10 @@
 
 <div class="article_copyright">
     <p><span class="copy-title">文章标题:</span>ioc循环依赖的发现与解决</p>
-    <p><span class="copy-title">文章字数:</span><span class="post-count">1.2k</span></p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">1.3k</span></p>
     <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
     <p><span class="copy-title">发布时间:</span>2019-09-16, 10:30:51</p>
-    <p><span class="copy-title">最后更新:</span>2019-09-16, 20:31:29</p>
+    <p><span class="copy-title">最后更新:</span>2019-09-18, 21:14:07</p>
     <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/09/16/ioc循环依赖的发现与解决/" title="ioc循环依赖的发现与解决">http://zhao4xi.github.io/2019/09/16/ioc循环依赖的发现与解决/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
@@ -536,7 +548,7 @@
     /*作者、标签的自动补全*/
     $(function () {
         $('.search').AutoComplete({
-            'data': ['#http','#https','#ioc','#循环依赖',],
+            'data': ['#http','#https','#ioc','#循环依赖','#aop',],
             'itemHeight': 20,
             'width': 418
         }).AutoComplete('show');
