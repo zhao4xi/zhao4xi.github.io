@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <title>常用Map的比较与实现(jdk1.8+) | Zhaoxi Blooooooooog</title>
+  <meta name="keywords" content=" Collection ">
+  <meta name="description" content="常用Map的比较与实现(jdk1.8+) | Zhaoxi Blooooooooog">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+<meta name="keywords" content="aop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="aop的原理探究">
+<meta property="og:url" content="http://zhao4xi.github.io/2019/09/17/aop的原理探究/index.html">
+<meta property="og:site_name" content="Zhaoxi Blooooooooog">
+<meta property="og:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+<meta property="og:locale" content="cn-ZH">
+<meta property="og:updated_time" content="2019-09-18T13:15:13.828Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="aop的原理探究">
+<meta name="twitter:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.0.1" rel="stylesheet">
+
+<link href="/css/hl_theme/github.css?v=1.0.1" rel="stylesheet">
+
+<link href="//cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="/js/jquery.autocomplete.min.js?v=1.0.1"></script>
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+<script src="/js/iconfont.js?v=1.0.1"></script>
+
+</head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="false">
+  <input class="theme_blog_path" value>
+</div>
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/" class="avatar_target">
+    <img class="avatar" src="/img/avatar.jpg" />
+</a>
+<div class="author">
+    <span>Zhaoxi</span>
+</div>
+
+<div class="icon">
+    
+        
+        <a title="github" href="https://github.com/zhao4xi" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-github"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="email" href="mailto:zhao4xi@126.com" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-email"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="qq" href="http://wpa.qq.com/msgrd?v=3&uin=517810353&site=qq&menu=yes" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-qq"></use>
+                </svg>
+            
+        </a>
+        
+    
+</div>
+
+
+
+
+<ul>
+    <li><div class="all active">全部文章<small>(21)</small></div></li>
+    
+        
+            
+            <li><div data-rel="数据库">数据库<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Redis">Redis<small>(5)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Spring">Spring<small>(4)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="协议">协议<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="源码">源码<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Java">Java<small>(4)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="算法">算法<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="框架">框架<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+    
+    
+    
+    
+    </div>
+    <div><a  class="friends">友链</a></div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="21">
+<input type="hidden" id="yelog_site_word_count" value="25.1k">
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="back-title-list"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="http://yelog.org/">叶落阁</a></li>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <form onkeydown="if(event.keyCode==13){return false;}">
+        <input class="search" type="text" placeholder="以 in: 开头进行全文搜索" autocomplete="off"id="local-search-input" >
+        <i class="cross"></i>
+        <span>
+            <label for="tagswitch">Tags:</label>
+            <input id="tagswitch" type="checkbox" style="display: none" />
+            <i id="tagsWitchIcon"></i>
+        </span>
+    </form>
+    <div class="tags-list">
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">MySQL</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">redis</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">spring mvc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">lock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">tcp</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">ThreadLocal</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">bean scope</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Spring</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">spring</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">transaction</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">http</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">https</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">volatile</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread Safe</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">Collection</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread Pool</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">红黑树</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">aop</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">ioc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">循环依赖</a>
+    </li>
+    
+    <div class="clearfix"></div>
+</div>
+
+    
+    <div id="local-search-result">
+
+    </div>
+    
+    <nav id="title-list-nav">
+        
+        <a  class="数据库 "
+           href="/2019/01/03/Mysql实现乐观锁和悲观锁/"
+           data-tag="MySQL,锁"
+           data-author="" >
+            <span class="post-title" title="MySQL实现乐观锁和悲观锁">MySQL实现乐观锁和悲观锁</span>
+            <span class="post-date" title="2019-01-03 14:58:25">2019/01/03</span>
+        </a>
+        
+        <a  class="数据库 "
+           href="/2018/12/14/MySQL字段到底推不推荐使用null值/"
+           data-tag="MySQL"
+           data-author="" >
+            <span class="post-title" title="MySQL字段到底推不推荐使用null值">MySQL字段到底推不推荐使用null值</span>
+            <span class="post-date" title="2018-12-14 14:59:38">2018/12/14</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/31/Redis为什么这么快之数据结构/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis为什么这么快之数据结构">Redis为什么这么快之数据结构</span>
+            <span class="post-date" title="2018-12-31 15:15:35">2018/12/31</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/29/Redis的数据类型和基本使用/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis的数据类型和基本使用">Redis的数据类型和基本使用</span>
+            <span class="post-date" title="2018-12-29 15:13:48">2018/12/29</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2019/01/01/Redis为什么这么快之服务器事件驱动/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis为什么这么快之服务器事件驱动">Redis为什么这么快之服务器事件驱动</span>
+            <span class="post-date" title="2019-01-01 15:16:15">2019/01/01</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/27/Spring-MVC的请求处理流程/"
+           data-tag="spring mvc"
+           data-author="" >
+            <span class="post-title" title="Spring MVC的请求处理流程">Spring MVC的请求处理流程</span>
+            <span class="post-date" title="2018-12-27 15:11:12">2018/12/27</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/30/Redis的数据持久化方式/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis的数据持久化方式">Redis的数据持久化方式</span>
+            <span class="post-date" title="2018-12-30 15:14:47">2018/12/30</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2019/01/03/Redis实现分布式锁/"
+           data-tag="redis,lock"
+           data-author="" >
+            <span class="post-title" title="Redis实现分布式锁">Redis实现分布式锁</span>
+            <span class="post-date" title="2019-01-03 15:17:22">2019/01/03</span>
+        </a>
+        
+        <a  class="协议 "
+           href="/2019/01/05/TCP-IP的三次握手和四次挥手/"
+           data-tag="tcp"
+           data-author="" >
+            <span class="post-title" title="TCP/IP的三次握手和四次挥手">TCP/IP的三次握手和四次挥手</span>
+            <span class="post-date" title="2019-01-05 14:51:46">2019/01/05</span>
+        </a>
+        
+        <a  class="源码 "
+           href="/2019/12/23/ThreadLocal使用场景及内存泄漏/"
+           data-tag="ThreadLocal"
+           data-author="" >
+            <span class="post-title" title="ThreadLocal使用场景及内存泄漏">ThreadLocal使用场景及内存泄漏</span>
+            <span class="post-date" title="2019-12-23 15:03:24">2019/12/23</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/26/Spring-Bean的作用域和生命周期/"
+           data-tag="bean scope,Spring"
+           data-author="" >
+            <span class="post-title" title="Spring Bean的作用域和生命周期">Spring Bean的作用域和生命周期</span>
+            <span class="post-date" title="2018-12-26 15:09:21">2018/12/26</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2019/01/05/Spring-事务/"
+           data-tag="spring,transaction"
+           data-author="" >
+            <span class="post-title" title="Spring 事务">Spring 事务</span>
+            <span class="post-date" title="2019-01-05 14:49:55">2019/01/05</span>
+        </a>
+        
+        <a  class="协议 "
+           href="/2019/01/28/https和http的区别与比较/"
+           data-tag="http,https"
+           data-author="" >
+            <span class="post-title" title="https和http的区别与比较">https和http的区别与比较</span>
+            <span class="post-date" title="2019-01-28 09:37:25">2019/01/28</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/23/volatile的使用方法及一些注意事项/"
+           data-tag="volatile"
+           data-author="" >
+            <span class="post-title" title="volatile的使用方法及一些注意事项">volatile的使用方法及一些注意事项</span>
+            <span class="post-date" title="2018-12-23 15:04:16">2018/12/23</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/17/如何实现线程安全/"
+           data-tag="Thread Safe"
+           data-author="" >
+            <span class="post-title" title="如何实现线程安全">如何实现线程安全</span>
+            <span class="post-date" title="2018-12-17 15:01:54">2018/12/17</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/24/常用Map的比较与实现-jdk1-8/"
+           data-tag="Collection"
+           data-author="" >
+            <span class="post-title" title="常用Map的比较与实现(jdk1.8+)">常用Map的比较与实现(jdk1.8+)</span>
+            <span class="post-date" title="2018-12-24 15:05:34">2018/12/24</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/15/深入理解Java线程池/"
+           data-tag="Thread,Thread Pool"
+           data-author="" >
+            <span class="post-title" title="深入理解Java线程池">深入理解Java线程池</span>
+            <span class="post-date" title="2018-12-15 15:00:51">2018/12/15</span>
+        </a>
+        
+        <a  class="算法 "
+           href="/2019/12/29/红黑树的实现原理及应用/"
+           data-tag="红黑树"
+           data-author="" >
+            <span class="post-title" title="红黑树的实现原理及应用">红黑树的实现原理及应用</span>
+            <span class="post-date" title="2019-12-29 15:12:44">2019/12/29</span>
+        </a>
+        
+        <a  class="框架 "
+           href="/2019/09/17/aop的原理探究/"
+           data-tag="aop"
+           data-author="" >
+            <span class="post-title" title="aop的原理探究">aop的原理探究</span>
+            <span class="post-date" title="2019-09-17 21:12:58">2019/09/17</span>
+        </a>
+        
+        <a  class="框架 "
+           href="/2019/09/16/ioc循环依赖的发现与解决/"
+           data-tag="ioc,循环依赖"
+           data-author="" >
+            <span class="post-title" title="ioc循环依赖的发现与解决">ioc循环依赖的发现与解决</span>
+            <span class="post-date" title="2019-09-16 10:30:51">2019/09/16</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/25/spring中的两种aop实现方式jdk动态代理和cglib代理/"
+           data-tag="spring,aop"
+           data-author="" >
+            <span class="post-title" title="spring中的两种aop实现方式jdk动态代理和cglib代理">spring中的两种aop实现方式jdk动态代理和cglib代理</span>
+            <span class="post-date" title="2018-12-25 15:07:32">2018/12/25</span>
+        </a>
+        
+    </nav>
+</div>
+    </div>
+    <div class="hide-list">
+        <div class="semicircle">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div class="post">
+    <div class="pjax">
+        <article id="post-常用Map的比较与实现-jdk1-8" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">常用Map的比较与实现(jdk1.8+)</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            
+                <a href="javascript:" data-rel="Java">Java</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            
+            <a href="javascript:" class="color1">Collection</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+        创建时间:<time class="date" title='更新时间: 2019-09-21 15:07:15'>2018-12-24 15:05</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        <span>字数:1.4k</span>
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读:<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#常用的Map比较"><span class="toc-text">常用的Map比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-的实现"><span class="toc-text">HashMap 的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put-K-key-V-value-方法的主要执行过程"><span class="toc-text">put(K key, V value) 方法的主要执行过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-K-key-方法主要执行过程"><span class="toc-text">get(K key) 方法主要执行过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rehasing-的一些问题"><span class="toc-text">rehasing 的一些问题.</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ConcurrentHashMap-的实现"><span class="toc-text">ConcurrentHashMap 的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#put-K-key-V-value-方法的主要执行过程-1"><span class="toc-text">put(K key, V value) 方法的主要执行过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-K-key-主要执行过程"><span class="toc-text">get(K key) 主要执行过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ConcurrentHashMap-改进的总结-1-7-gt-1-8"><span class="toc-text">ConcurrentHashMap 改进的总结 (1.7 -&gt; 1.8)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashTable"><span class="toc-text">HashTable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TreeMap"><span class="toc-text">TreeMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#常用Map的继承结构图"><span class="toc-text">常用Map的继承结构图</span></a></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="常用的Map比较"><a href="#常用的Map比较" class="headerlink" title="常用的Map比较"></a>常用的Map比较</h2><table>
+<thead>
+<tr>
+<th align="center">比较项</th>
+<th align="center">ConcurrentHashMap</th>
+<th align="center">HashTable</th>
+<th align="center">HashMap</th>
+<th align="center">TreeMap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">线程安全</td>
+<td align="center">是</td>
+<td align="center">是</td>
+<td align="center">否</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td align="center">线程安全方式</td>
+<td align="center">锁分段技术1.7 / CAS+synchronized1.8</td>
+<td align="center">方法synchronized</td>
+<td align="center">不安全</td>
+<td align="center">不安全</td>
+</tr>
+<tr>
+<td align="center">Key可以为null</td>
+<td align="center">否</td>
+<td align="center">否</td>
+<td align="center">是</td>
+<td align="center">否</td>
+</tr>
+<tr>
+<td align="center">Value可以为null</td>
+<td align="center">否</td>
+<td align="center">否</td>
+<td align="center">是</td>
+<td align="center">是</td>
+</tr>
+<tr>
+<td align="center">继承自</td>
+<td align="center">AbstractMap</td>
+<td align="center">Dictionary</td>
+<td align="center">AbstractMap</td>
+<td align="center">AbstractMap</td>
+</tr>
+</tbody></table>
+<h2 id="HashMap-的实现"><a href="#HashMap-的实现" class="headerlink" title="HashMap 的实现"></a>HashMap 的实现</h2><pre><code class="java">    // hashmap 的整体结构
+    A[0]       A[1]       A[2]       A[3]       RBTR[4]       A[5] 
+     ↓          ↓          ↓          ↓          ↓             ↓
+    null      A[1-1]      null      A[3-1]     RBTR[4-1]      null    
+                ↓                     ↓        ...(超过8)   
+              A[1-2]                null     RBTR[4-n] RBTR[4-m]  
+
+    数组的元素结构
+    class Node{ //链表        0,1,2,3,5 的数据结构       
+        K Key;
+        V Value;
+        int hash;
+        Node next;
+    }
+
+   class TreeNode{ //红黑树     4的数据结构
+        TreeNode parent;
+        TreeNode left;
+        TreeNode right;
+        TreeNode prev;
+        boolean red;
+     }
+</code></pre>
+<p>HashMap的整体结构就是 数组 + 链表(元素少于8使用链表, 元素大于8使用红黑树).<br>数组串起来了HashMap的主体, 链表则为了解决hash冲突的问题.</p>
+<h4 id="put-K-key-V-value-方法的主要执行过程"><a href="#put-K-key-V-value-方法的主要执行过程" class="headerlink" title="put(K key, V value) 方法的主要执行过程"></a>put(K key, V value) 方法的主要执行过程</h4><ol>
+<li>首先计算key的hashcode. 调用了key自身的hashCode() 方法. 所以所有插入HashMap 的Key都必须重写其hashCode方法和equels方法.<br> 拓展: 一个自定义类作为Key时, 必须同时重写equals方法和hashCode.<pre><code>  推荐使用String 来作为Key, 其优点是 String 是不可变的, 并且已经实现了 equals 和 hashCode 方法.
+  如果不重写这两个方法, 可能引发的就是高几率hash碰撞, 导致性能问题.</code></pre></li>
+<li>如果数组没有初始化, 那么调用默认初始化, 长度 16, 阈值为16 * 0.75(默认的阈值因子)</li>
+<li>根据当前Key的 HashCode 与 (数组长度-1) 做并集的结果 作为数组下标查找, 如果没有查找到值, 那么直接插入Node.</li>
+<li>如果hash碰撞, 根据 数组现有元素 进行判断数据处理<br>4-1 : 如果插入值与 数组现有元素 hash 值相同, key 也相同, equal 方法也相同, 那么说明是插入重复值.<br>4-2 : 如果 数组现有元素 是 TreeNode类型(红黑树节点), 那么直接插入节点到红黑树.<br>4-3 : 如果 Hash 碰撞的值小于插入 转化为 红黑树的阈值 (默认8个), 那么直接如插入链表尾部, 否则将链表转化为 红黑树. 所有该hash值的key转为TreeNode.</li>
+<li>如果当前的map的元素数量超过阈值(初始化阈值 16 * 0.75 = 12), 那么调整数组的大小, 也叫rehashing.<br>5-1 : 如果数组大小已经超过默认最大值 (1&lt;&lt;30), 不再变动<br>5-2 : 没有超过默认最大值, 将数组的容量 * 2.<br>5-3 : 将旧数组中的元素赋值到新的数组中.</li>
+</ol>
+<h4 id="get-K-key-方法主要执行过程"><a href="#get-K-key-方法主要执行过程" class="headerlink" title="get(K key) 方法主要执行过程"></a>get(K key) 方法主要执行过程</h4><p>遍历整个数组<br>1: 如果数组中节点 equals(), key, hash 和传入值都相等, 那么直接返回.<br>2: 如果hash值相等, 节点类型是 TreeNode, 则转由红黑树查找, 否则遍历整个链表查找.</p>
+<h4 id="rehasing-的一些问题"><a href="#rehasing-的一些问题" class="headerlink" title="rehasing 的一些问题."></a>rehasing 的一些问题.</h4><p>当两个线程同时调整HashMap的情况下, 调整链表的next节点时, 可能造成收尾递归, 从而无限循环. 所以在多线程情况下, 推荐使用 ConcurrentHashMap.</p>
+<h2 id="ConcurrentHashMap-的实现"><a href="#ConcurrentHashMap-的实现" class="headerlink" title="ConcurrentHashMap 的实现"></a>ConcurrentHashMap 的实现</h2><p>ConcurrentHashMap的整体结构和HashMap类型, 只不过通过CAS和synchronized来控制并发操作, 整体看来它就是优化和线程安全的HashMap.</p>
+<p>jdk1.7 中, ConcurrentHashMap是由 一个 Segment 数组 和 多个 HashEntry数组组成, Segment 数组就是将一个大表转化为多个小表,  加锁时, 只对一个Segment元素(HashEntry数组) 进行加锁, 减小了锁的粒度, 提高了性能. 其他的数据结构和HashMap实现类似.</p>
+<h4 id="put-K-key-V-value-方法的主要执行过程-1"><a href="#put-K-key-V-value-方法的主要执行过程-1" class="headerlink" title="put(K key, V value) 方法的主要执行过程"></a>put(K key, V value) 方法的主要执行过程</h4><ol>
+<li>首先获取hash值</li>
+<li>如果数据没有初始化, 则调用数组初始化<br>2-1 : 如果已经开始初始化的标志位小于0, 那么当前线程就挂起<br>2-2 : 已经开始初始化的标识位等于0,  将开始初始化的标志位设置为-1, 并开始初始化<br>2-3 : 上面两部就是防止并发初始化.</li>
+<li>没有检测hash冲突那么就直接调用UnSafe的CAS插入该元素<br>3-1 : 如果没有扩容, 直接插入<br>3-2 : 如果容器正在扩容, 那么会调用帮助helpTransfer方法帮助扩容.</li>
+<li>如果检测到hash冲突 ,使用 synchronized 加锁完成 类似 HashMap 碰撞插入的操作.</li>
+<li>检测元素数量是否超过阈值, 进行扩容.</li>
+</ol>
+<h4 id="get-K-key-主要执行过程"><a href="#get-K-key-主要执行过程" class="headerlink" title="get(K key) 主要执行过程"></a>get(K key) 主要执行过程</h4><p>遍历整个数组<br>1: 根据hash值, 找到数组中节点 hash, equals(), key 都相同的元素, 直接返回<br>2: 如果数组查找返回的hash值&lt; 0, 那么数组正在扩容<br>2-1 : 获取到正在扩容的数组, 执行第一步<br>2-2 : 不是首结点, 就向下遍历查找  </p>
+<h4 id="ConcurrentHashMap-改进的总结-1-7-gt-1-8"><a href="#ConcurrentHashMap-改进的总结-1-7-gt-1-8" class="headerlink" title="ConcurrentHashMap 改进的总结 (1.7 -&gt; 1.8)"></a>ConcurrentHashMap 改进的总结 (1.7 -&gt; 1.8)</h4><ol>
+<li>降低了锁的粒度, 由一个Segment(多个HashEntry) -&gt; 一个HashEntry. 提升了性能</li>
+<li>使用内置的synchronized来代替ReentrantLock, 因为ReentrantLock相对synchronized在大量操作时, 会有更多的内存开销, 由于锁粒度下降, ReentrantLock相对synchronized也没有了优势, 且随着synchronized的优化, synchronized的性能也有一定的提升.</li>
+</ol>
+<h2 id="HashTable"><a href="#HashTable" class="headerlink" title="HashTable"></a>HashTable</h2><p>HashTable 虽然是线程安全的, 但是已经不推荐使用, 因为其public方法直接使用synchronized加锁, 相比ConcurrentHashMap, 在多线程操作时, 性能弱了不少.<br>其内部存储就是一个弱化的 HashMap , 通过数组 + 链表存储结构.</p>
+<h2 id="TreeMap"><a href="#TreeMap" class="headerlink" title="TreeMap"></a>TreeMap</h2><p>本质就是一个红黑树, 根据Key的比较器来比较大小进行排序.</p>
+<h2 id="常用Map的继承结构图"><a href="#常用Map的继承结构图" class="headerlink" title="常用Map的继承结构图"></a>常用Map的继承结构图</h2><p><img src="/.io//1.png" alt="细虚线框为接口, 粗虚线框为抽象类, 虚线箭头为继承, 实现箭头为实现"></p>
+
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
+    </div>
+</article>
+
+
+
+<div class="article_copyright">
+    <p><span class="copy-title">文章标题:</span>常用Map的比较与实现(jdk1.8+)</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">1.4k</span></p>
+    <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
+    <p><span class="copy-title">发布时间:</span>2018-12-24, 15:05:34</p>
+    <p><span class="copy-title">最后更新:</span>2019-09-21, 15:07:15</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2018/12/24/常用Map的比较与实现-jdk1-8/" title="常用Map的比较与实现(jdk1.8+)">http://zhao4xi.github.io/2018/12/24/常用Map的比较与实现-jdk1-8/</a>
+    <p>
+        <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+    </p>
+</div>
+
+
+
+
+
+    
+
+
+
+
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">©2016-2019 Zhaoxi</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
+
+    </div>
+    <div class="full-toc">
+        <button class="full"><span class="min "></span></button>
+<button class="post-toc-menu"><span class="post-toc-menu-icons"></span></button>
+<div class="post-toc"><span class="post-toc-title">目录</span>
+    <div class="post-toc-content">
+
+    </div>
+</div>
+<a class="" id="rocket" href="javascript:void(0)"></a>
+    </div>
+</div>
+<div class="acParent"></div>
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.0.1" ></script>
+
+<script src="/js/script.js?v=1.0.1" ></script>
+<script>
+    var img_resize = 'default';
+    /*作者、标签的自动补全*/
+    $(function () {
+        $('.search').AutoComplete({
+            'data': ['#MySQL','#锁','#redis','#spring mvc','#lock','#tcp','#ThreadLocal','#bean scope','#Spring','#spring','#transaction','#http','#https','#volatile','#Thread Safe','#Collection','#Thread','#Thread Pool','#红黑树','#aop','#ioc','#循环依赖',],
+            'itemHeight': 20,
+            'width': 418
+        }).AutoComplete('show');
+    })
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $(".post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+
+        /*高亮代码块行号*/
+        
+        $('pre code').each(function(){
+            var lines = $(this).text().split('\n').length - 1, widther='';
+            if (lines>99) {
+                widther = 'widther'
+            }
+            var $numbering = $('<ul/>').addClass('pre-numbering ' + widther).attr("unselectable","on");
+            $(this).addClass('has-numbering ' + widther)
+                    .parent()
+                    .append($numbering);
+            for(var i=1;i<=lines;i++){
+                $numbering.append($('<li/>').text(i));
+            }
+        });
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<style>
+    pre{
+        position: relative;
+        margin-bottom: 24px;
+        border-radius: 10px;
+        border: 1px solid #e2dede;
+        background: #FFF;
+        overflow: hidden;
+    }
+    code.has-numbering{
+        margin-left: 30px;
+    }
+    code.has-numbering.widther{
+        margin-left: 35px;
+    }
+    .pre-numbering{
+        margin: 0px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        padding: 0.5em 3px 0.7em 5px;
+        border-right: 1px solid #C3CCD0;
+        text-align: right;
+        color: #AAA;
+        background-color: ;
+    }
+    .pre-numbering.widther {
+        width: 35px;
+    }
+</style>
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+        .nav .hide-list.fullscreen {
+            left: 492px
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+    .post .pjax article .article-entry>ol, .post .pjax article .article-entry>ul, .post .pjax article>ol, .post .pjax article>ul{
+        border: #e2dede solid 1px;
+        border-radius: 10px;
+        padding: 10px 32px 10px 56px;
+    }
+    .post .pjax article .article-entry li>ol, .post .pjax article .article-entry li>ul,.post .pjax article li>ol, .post .pjax article li>ul{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .post .pjax article .article-entry>ol>li, .post .pjax article .article-entry>ul>li,.post .pjax article>ol>li, .post .pjax article>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    .post .pjax article .article-entry li>ol>li, .post .pjax article .article-entry li>ul>li,.post .pjax article li>ol>li, .post .pjax article li>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+    .nav-right:before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
+        background: url("https://i.loli.net/2019/07/22/5d3521411f3f169375.png");
+        background-repeat: no-repeat;
+        background-position: 50% 0;
+        -ms-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -webkit-background-size: cover;
+        background-size: cover;
+    }
+    
+
+    
+</style>
+
+
+
+
+
+
+
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <title>Redis的数据持久化方式 | Zhaoxi Blooooooooog</title>
+  <meta name="keywords" content=" redis ">
+  <meta name="description" content="Redis的数据持久化方式 | Zhaoxi Blooooooooog">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+<meta name="keywords" content="aop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="aop的原理探究">
+<meta property="og:url" content="http://zhao4xi.github.io/2019/09/17/aop的原理探究/index.html">
+<meta property="og:site_name" content="Zhaoxi Blooooooooog">
+<meta property="og:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+<meta property="og:locale" content="cn-ZH">
+<meta property="og:updated_time" content="2019-09-18T13:15:13.828Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="aop的原理探究">
+<meta name="twitter:description" content="前言aop的概念时常提起, 但是没有在实际场景中使用, 最近有机会在实际场景中运用, 这里深入的记录一下探索过程. aop 的分类aop 全称: Aspect Oriented Programming , 即面向切面编程, 是在编译时或者运行时为某一个切点(一般是方法)添加统一的功能的一种编码方式.  编译时AOP(静态织入), 常见的框架 PostSharp(主流用法, 基于mono.cicel">
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.0.1" rel="stylesheet">
+
+<link href="/css/hl_theme/github.css?v=1.0.1" rel="stylesheet">
+
+<link href="//cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="/js/jquery.autocomplete.min.js?v=1.0.1"></script>
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+<script src="/js/iconfont.js?v=1.0.1"></script>
+
+</head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="false">
+  <input class="theme_blog_path" value>
+</div>
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/" class="avatar_target">
+    <img class="avatar" src="/img/avatar.jpg" />
+</a>
+<div class="author">
+    <span>Zhaoxi</span>
+</div>
+
+<div class="icon">
+    
+        
+        <a title="github" href="https://github.com/zhao4xi" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-github"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="email" href="mailto:zhao4xi@126.com" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-email"></use>
+                </svg>
+            
+        </a>
+        
+    
+        
+        <a title="qq" href="http://wpa.qq.com/msgrd?v=3&uin=517810353&site=qq&menu=yes" target="_blank">
+            
+                <svg class="iconfont-svg" aria-hidden="true">
+                    <use xlink:href="#icon-qq"></use>
+                </svg>
+            
+        </a>
+        
+    
+</div>
+
+
+
+
+<ul>
+    <li><div class="all active">全部文章<small>(21)</small></div></li>
+    
+        
+            
+            <li><div data-rel="数据库">数据库<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Redis">Redis<small>(5)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Spring">Spring<small>(4)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="协议">协议<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="源码">源码<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="Java">Java<small>(4)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="算法">算法<small>(1)</small></div>
+                
+            </li>
+            
+        
+    
+        
+            
+            <li><div data-rel="框架">框架<small>(2)</small></div>
+                
+            </li>
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+    
+    
+    
+    
+    </div>
+    <div><a  class="friends">友链</a></div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="21">
+<input type="hidden" id="yelog_site_word_count" value="25.1k">
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="back-title-list"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="http://yelog.org/">叶落阁</a></li>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <form onkeydown="if(event.keyCode==13){return false;}">
+        <input class="search" type="text" placeholder="以 in: 开头进行全文搜索" autocomplete="off"id="local-search-input" >
+        <i class="cross"></i>
+        <span>
+            <label for="tagswitch">Tags:</label>
+            <input id="tagswitch" type="checkbox" style="display: none" />
+            <i id="tagsWitchIcon"></i>
+        </span>
+    </form>
+    <div class="tags-list">
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">MySQL</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">锁</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">redis</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">spring mvc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">lock</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">tcp</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">ThreadLocal</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">bean scope</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Spring</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">spring</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">transaction</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">http</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">https</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">volatile</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread Safe</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color1">Collection</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color2">Thread Pool</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">红黑树</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">aop</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color4">ioc</a>
+    </li>
+    
+    <li class="article-tag-list-item">
+        <a href="javascript:" class="color5">循环依赖</a>
+    </li>
+    
+    <div class="clearfix"></div>
+</div>
+
+    
+    <div id="local-search-result">
+
+    </div>
+    
+    <nav id="title-list-nav">
+        
+        <a  class="数据库 "
+           href="/2019/01/03/Mysql实现乐观锁和悲观锁/"
+           data-tag="MySQL,锁"
+           data-author="" >
+            <span class="post-title" title="MySQL实现乐观锁和悲观锁">MySQL实现乐观锁和悲观锁</span>
+            <span class="post-date" title="2019-01-03 14:58:25">2019/01/03</span>
+        </a>
+        
+        <a  class="数据库 "
+           href="/2018/12/14/MySQL字段到底推不推荐使用null值/"
+           data-tag="MySQL"
+           data-author="" >
+            <span class="post-title" title="MySQL字段到底推不推荐使用null值">MySQL字段到底推不推荐使用null值</span>
+            <span class="post-date" title="2018-12-14 14:59:38">2018/12/14</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/31/Redis为什么这么快之数据结构/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis为什么这么快之数据结构">Redis为什么这么快之数据结构</span>
+            <span class="post-date" title="2018-12-31 15:15:35">2018/12/31</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/29/Redis的数据类型和基本使用/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis的数据类型和基本使用">Redis的数据类型和基本使用</span>
+            <span class="post-date" title="2018-12-29 15:13:48">2018/12/29</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2019/01/01/Redis为什么这么快之服务器事件驱动/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis为什么这么快之服务器事件驱动">Redis为什么这么快之服务器事件驱动</span>
+            <span class="post-date" title="2019-01-01 15:16:15">2019/01/01</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/27/Spring-MVC的请求处理流程/"
+           data-tag="spring mvc"
+           data-author="" >
+            <span class="post-title" title="Spring MVC的请求处理流程">Spring MVC的请求处理流程</span>
+            <span class="post-date" title="2018-12-27 15:11:12">2018/12/27</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2018/12/30/Redis的数据持久化方式/"
+           data-tag="redis"
+           data-author="" >
+            <span class="post-title" title="Redis的数据持久化方式">Redis的数据持久化方式</span>
+            <span class="post-date" title="2018-12-30 15:14:47">2018/12/30</span>
+        </a>
+        
+        <a  class="Redis "
+           href="/2019/01/03/Redis实现分布式锁/"
+           data-tag="redis,lock"
+           data-author="" >
+            <span class="post-title" title="Redis实现分布式锁">Redis实现分布式锁</span>
+            <span class="post-date" title="2019-01-03 15:17:22">2019/01/03</span>
+        </a>
+        
+        <a  class="协议 "
+           href="/2019/01/05/TCP-IP的三次握手和四次挥手/"
+           data-tag="tcp"
+           data-author="" >
+            <span class="post-title" title="TCP/IP的三次握手和四次挥手">TCP/IP的三次握手和四次挥手</span>
+            <span class="post-date" title="2019-01-05 14:51:46">2019/01/05</span>
+        </a>
+        
+        <a  class="源码 "
+           href="/2019/12/23/ThreadLocal使用场景及内存泄漏/"
+           data-tag="ThreadLocal"
+           data-author="" >
+            <span class="post-title" title="ThreadLocal使用场景及内存泄漏">ThreadLocal使用场景及内存泄漏</span>
+            <span class="post-date" title="2019-12-23 15:03:24">2019/12/23</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/26/Spring-Bean的作用域和生命周期/"
+           data-tag="bean scope,Spring"
+           data-author="" >
+            <span class="post-title" title="Spring Bean的作用域和生命周期">Spring Bean的作用域和生命周期</span>
+            <span class="post-date" title="2018-12-26 15:09:21">2018/12/26</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2019/01/05/Spring-事务/"
+           data-tag="spring,transaction"
+           data-author="" >
+            <span class="post-title" title="Spring 事务">Spring 事务</span>
+            <span class="post-date" title="2019-01-05 14:49:55">2019/01/05</span>
+        </a>
+        
+        <a  class="协议 "
+           href="/2019/01/28/https和http的区别与比较/"
+           data-tag="http,https"
+           data-author="" >
+            <span class="post-title" title="https和http的区别与比较">https和http的区别与比较</span>
+            <span class="post-date" title="2019-01-28 09:37:25">2019/01/28</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/23/volatile的使用方法及一些注意事项/"
+           data-tag="volatile"
+           data-author="" >
+            <span class="post-title" title="volatile的使用方法及一些注意事项">volatile的使用方法及一些注意事项</span>
+            <span class="post-date" title="2018-12-23 15:04:16">2018/12/23</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/17/如何实现线程安全/"
+           data-tag="Thread Safe"
+           data-author="" >
+            <span class="post-title" title="如何实现线程安全">如何实现线程安全</span>
+            <span class="post-date" title="2018-12-17 15:01:54">2018/12/17</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/24/常用Map的比较与实现-jdk1-8/"
+           data-tag="Collection"
+           data-author="" >
+            <span class="post-title" title="常用Map的比较与实现(jdk1.8+)">常用Map的比较与实现(jdk1.8+)</span>
+            <span class="post-date" title="2018-12-24 15:05:34">2018/12/24</span>
+        </a>
+        
+        <a  class="Java "
+           href="/2018/12/15/深入理解Java线程池/"
+           data-tag="Thread,Thread Pool"
+           data-author="" >
+            <span class="post-title" title="深入理解Java线程池">深入理解Java线程池</span>
+            <span class="post-date" title="2018-12-15 15:00:51">2018/12/15</span>
+        </a>
+        
+        <a  class="算法 "
+           href="/2019/12/29/红黑树的实现原理及应用/"
+           data-tag="红黑树"
+           data-author="" >
+            <span class="post-title" title="红黑树的实现原理及应用">红黑树的实现原理及应用</span>
+            <span class="post-date" title="2019-12-29 15:12:44">2019/12/29</span>
+        </a>
+        
+        <a  class="框架 "
+           href="/2019/09/17/aop的原理探究/"
+           data-tag="aop"
+           data-author="" >
+            <span class="post-title" title="aop的原理探究">aop的原理探究</span>
+            <span class="post-date" title="2019-09-17 21:12:58">2019/09/17</span>
+        </a>
+        
+        <a  class="框架 "
+           href="/2019/09/16/ioc循环依赖的发现与解决/"
+           data-tag="ioc,循环依赖"
+           data-author="" >
+            <span class="post-title" title="ioc循环依赖的发现与解决">ioc循环依赖的发现与解决</span>
+            <span class="post-date" title="2019-09-16 10:30:51">2019/09/16</span>
+        </a>
+        
+        <a  class="Spring "
+           href="/2018/12/25/spring中的两种aop实现方式jdk动态代理和cglib代理/"
+           data-tag="spring,aop"
+           data-author="" >
+            <span class="post-title" title="spring中的两种aop实现方式jdk动态代理和cglib代理">spring中的两种aop实现方式jdk动态代理和cglib代理</span>
+            <span class="post-date" title="2018-12-25 15:07:32">2018/12/25</span>
+        </a>
+        
+    </nav>
+</div>
+    </div>
+    <div class="hide-list">
+        <div class="semicircle">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div class="post">
+    <div class="pjax">
+        <article id="post-Redis的数据持久化方式" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">Redis的数据持久化方式</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            
+                <a href="javascript:" data-rel="Redis">Redis</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            
+            <a href="javascript:" class="color1">redis</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+        创建时间:<time class="date" title='更新时间: 2019-09-21 15:15:24'>2018-12-30 15:14</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        <span>字数:1.3k</span>
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读:<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-的持久化简介"><span class="toc-text">Redis 的持久化简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-持久化的两种方式"><span class="toc-text">Redis 持久化的两种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#RDB-持久化"><span class="toc-text">RDB 持久化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RDB-可能的问题和解决办法"><span class="toc-text">RDB 可能的问题和解决办法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF-持久化"><span class="toc-text">AOF 持久化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF可能的问题及解决方式"><span class="toc-text">AOF可能的问题及解决方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#持久化的比较"><span class="toc-text">持久化的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#持久化的选择"><span class="toc-text">持久化的选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用文献"><span class="toc-text">引用文献</span></a></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Redis-的持久化简介"><a href="#Redis-的持久化简介" class="headerlink" title="Redis 的持久化简介"></a>Redis 的持久化简介</h2><p>Redis提供了两种不同的方式将数据持久化到硬盘中, 使得数据在Redis 重启后仍然存在. 将内存中的数据存储到硬盘的一个主要问题就是为了在之后重用数据, 或者是为了防止系统故障而将数据备份到一个远程位置. </p>
+<h2 id="Redis-持久化的两种方式"><a href="#Redis-持久化的两种方式" class="headerlink" title="Redis 持久化的两种方式"></a>Redis 持久化的两种方式</h2><h4 id="RDB-持久化"><a href="#RDB-持久化" class="headerlink" title="RDB 持久化"></a>RDB 持久化</h4><p>RDB 持久化又称为快照(snapchotting), 它可以将某一时刻的所有数据全部写入到硬盘中, 存储到后缀为.rdb文件中.</p>
+<p>RDB 持久化的触发方式</p>
+<ul>
+<li>[手动] 客户端发送 <strong>BGSAVE</strong> 命令来创建一个快照. Redis会调用fork 来创建一个子进程, 子进程负责写入快照到硬盘, 父进程继续处理命令请求.</li>
+<li>[手动] 客户端发送 <strong>SAVE</strong> 命令来创建一个快照. Redis 会在快照创建完毕之前不处理任何命令. 一般在没有足够内存去执行 BGSAVE 的情况下, 或者等待持久化无所谓的情况 才会使用 SAVE 命令.</li>
+<li>[自动] 服务端配置设置 save 选项. save 60 10000 命令含义是 “60秒内有10 000次写入” 这个条件满足时, 自动调用 BGSAVE 命令. 如果有多个save配置, 任意一个满足则触发 BGSAVE命令.</li>
+<li>[自动] 服务端接受 SHUTDOWN 命令关闭服务器时, 或者接受到标准 TERM 信号时,  自动执行 SAVE 命令. 并在结束时关闭服务器.</li>
+<li>[自动] 当一个 Redis 服务器连接另一个 Redis 服务器, 并向对方发送 SYNC 命令开始一次复制操作的时候, 如果主服务器并非刚刚执行 BGSAVE 命令, 那么主服务器就会执行 BGSAVE 命令.</li>
+</ul>
+<h4 id="RDB-可能的问题和解决办法"><a href="#RDB-可能的问题和解决办法" class="headerlink" title="RDB 可能的问题和解决办法"></a>RDB 可能的问题和解决办法</h4><p>问题1: 当 Redis 存储的数据量只有几GB的时候, 快照是完全没有问题的. 当内存占用高达几十个GB, 并且剩余内存不多的时候, BGSAVE 创建子进程可能导致系统长时间卡顿, 也可能引发系统大量地使用虚拟内存,从而导致 Redis 的性能降低至无法使用的程度.<br>解决办法：使用 SAVE 命令来代替 BGSAVE 命令,因为没有了子进程争抢资源, 所以会比 BGSAVE 快一些.</p>
+<p>问题2: 在执行 BGSAVE 或者 SAVE 命令的间隙, Redis 发生异常, 会造成间隙的数据会丢失.<br>解决办法：如果使用RDB方式无法解决, 只能使用 AOF 方式. </p>
+<h4 id="AOF-持久化"><a href="#AOF-持久化" class="headerlink" title="AOF 持久化"></a>AOF 持久化</h4><p>AOF(append-only file) 持久化, 它会在执行写命令时, 将被执行的写命令写入到后缀为.aof文件里面.</p>
+<p>AOF 触发方式(默认为 no)<br>appendonly yes</p>
+<p>AOF 的同步频率  appendfsync</p>
+<ul>
+<li>always: 每个 Redis 命令都要同步写入到硬盘, 这样会严重降低 Redis 的速度. 固态硬盘用户需要谨慎使用该选项, 可能引发ssd的写入放大问题, 将低ssd的使用寿命.</li>
+<li>everysec (default): 每秒执行一次同步, 显示地将多个命令同步到硬盘. </li>
+<li>no: 让操作系统决定应该何时进行同步. </li>
+</ul>
+<h4 id="AOF可能的问题及解决方式"><a href="#AOF可能的问题及解决方式" class="headerlink" title="AOF可能的问题及解决方式"></a>AOF可能的问题及解决方式</h4><p>问题1: AOF如果使用 everysec 的同步频率, 可以将丢失数据的窗口降低到1秒, 为什么Redis默认不启用AOF?<br>回答: 1. 因为 Redis 不断写入记录到 AOF 文件中, 随着 Redis 的运行, AOF 的体积也不短增大, 极端情况, 可能占用所有硬盘; 2. 当 AOF 过大的时候, 重启 Redis 重新执行 AOF 文件来还原数据集时, 执行时间可能非常长. </p>
+<p>问题2: 如何解决 AOF 文件体积不断增大的问题?<br>解决办法: 执行 BGREWRITEAOF 命令, 压缩 AOF 文件, 使得其体积尽可能小. 该命令的工作原理: Redis 创建一个子进程, 使用子进程重写 AOF 文件.</p>
+<p>问题3: 是否可以自动执行 BGREWRITEAOF 命令?<br>回答: 可以自动执行, 需要开启配置 auto-aof-rewrite-percentage 和 auto-aof-rewrite-min-size 两个选项, 设置 启动 AOF持久化且 auto-aof-rewrite-percentage 100, auto-aof-rewrite-min-size 64MB 时, 当 AOF 文件大于64MB, 且 AOF 文件的体积比上一次重写之后的体积大了一倍, Redis 将执行 BGREWRITEAOF 命令.</p>
+<h2 id="持久化的比较"><a href="#持久化的比较" class="headerlink" title="持久化的比较"></a>持久化的比较</h2><p>下面的比较都是在数据量较大, 且配置设置合理的情况下 相对而言的比较.</p>
+<table>
+<thead>
+<tr>
+<th align="left">持久化方式</th>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">RDB</td>
+<td align="left">1. 文件紧凑, 体积小<br> 2. 恢复速度快<br></td>
+<td align="left">1. 不能实时持久化, 备份间隙数据丢失严重<br> 2. 不同版本可能有兼容性问题</td>
+</tr>
+<tr>
+<td align="left">AOF</td>
+<td align="left">1. 备份速度快 <br> 2. 不同版本兼容性好</td>
+<td align="left">1. 文件大<br> 2. 恢复速度慢</td>
+</tr>
+</tbody></table>
+<h2 id="持久化的选择"><a href="#持久化的选择" class="headerlink" title="持久化的选择"></a>持久化的选择</h2><ol>
+<li>只用来数据缓存, 则可以都不启用.</li>
+<li>单机情况下, 如果数据完整性要求较高 建议开启 AOF持久 或者 AOF RDB 双持久, 如果对数据完整性要求不高, 可以只开启 RDB. 具体的参数设置根据实际业务调整.</li>
+<li>主从情况下, master 两种方式都关闭, slaver 开启 aof 并定时执行 BGREWRITEAOF 命令.</li>
+</ol>
+<h2 id="引用文献"><a href="#引用文献" class="headerlink" title="引用文献"></a>引用文献</h2><p>Redis in Action (Redis 实战)</p>
+
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 zhao4xi@126.com </span>
+    </div>
+</article>
+
+
+
+<div class="article_copyright">
+    <p><span class="copy-title">文章标题:</span>Redis的数据持久化方式</p>
+    <p><span class="copy-title">文章字数:</span><span class="post-count">1.3k</span></p>
+    <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="Zhaoxi">Zhaoxi</a></p>
+    <p><span class="copy-title">发布时间:</span>2018-12-30, 15:14:47</p>
+    <p><span class="copy-title">最后更新:</span>2019-09-21, 15:15:24</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2018/12/30/Redis的数据持久化方式/" title="Redis的数据持久化方式">http://zhao4xi.github.io/2018/12/30/Redis的数据持久化方式/</a>
+    <p>
+        <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+    </p>
+</div>
+
+
+
+
+
+    
+
+
+
+
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">©2016-2019 Zhaoxi</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
+
+    </div>
+    <div class="full-toc">
+        <button class="full"><span class="min "></span></button>
+<button class="post-toc-menu"><span class="post-toc-menu-icons"></span></button>
+<div class="post-toc"><span class="post-toc-title">目录</span>
+    <div class="post-toc-content">
+
+    </div>
+</div>
+<a class="" id="rocket" href="javascript:void(0)"></a>
+    </div>
+</div>
+<div class="acParent"></div>
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.0.1" ></script>
+
+<script src="/js/script.js?v=1.0.1" ></script>
+<script>
+    var img_resize = 'default';
+    /*作者、标签的自动补全*/
+    $(function () {
+        $('.search').AutoComplete({
+            'data': ['#MySQL','#锁','#redis','#spring mvc','#lock','#tcp','#ThreadLocal','#bean scope','#Spring','#spring','#transaction','#http','#https','#volatile','#Thread Safe','#Collection','#Thread','#Thread Pool','#红黑树','#aop','#ioc','#循环依赖',],
+            'itemHeight': 20,
+            'width': 418
+        }).AutoComplete('show');
+    })
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $(".post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+
+        /*高亮代码块行号*/
+        
+        $('pre code').each(function(){
+            var lines = $(this).text().split('\n').length - 1, widther='';
+            if (lines>99) {
+                widther = 'widther'
+            }
+            var $numbering = $('<ul/>').addClass('pre-numbering ' + widther).attr("unselectable","on");
+            $(this).addClass('has-numbering ' + widther)
+                    .parent()
+                    .append($numbering);
+            for(var i=1;i<=lines;i++){
+                $numbering.append($('<li/>').text(i));
+            }
+        });
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<style>
+    pre{
+        position: relative;
+        margin-bottom: 24px;
+        border-radius: 10px;
+        border: 1px solid #e2dede;
+        background: #FFF;
+        overflow: hidden;
+    }
+    code.has-numbering{
+        margin-left: 30px;
+    }
+    code.has-numbering.widther{
+        margin-left: 35px;
+    }
+    .pre-numbering{
+        margin: 0px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        padding: 0.5em 3px 0.7em 5px;
+        border-right: 1px solid #C3CCD0;
+        text-align: right;
+        color: #AAA;
+        background-color: ;
+    }
+    .pre-numbering.widther {
+        width: 35px;
+    }
+</style>
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+        .nav .hide-list.fullscreen {
+            left: 492px
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+    .post .pjax article .article-entry>ol, .post .pjax article .article-entry>ul, .post .pjax article>ol, .post .pjax article>ul{
+        border: #e2dede solid 1px;
+        border-radius: 10px;
+        padding: 10px 32px 10px 56px;
+    }
+    .post .pjax article .article-entry li>ol, .post .pjax article .article-entry li>ul,.post .pjax article li>ol, .post .pjax article li>ul{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+    .post .pjax article .article-entry>ol>li, .post .pjax article .article-entry>ul>li,.post .pjax article>ol>li, .post .pjax article>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    .post .pjax article .article-entry li>ol>li, .post .pjax article .article-entry li>ul>li,.post .pjax article li>ol>li, .post .pjax article li>ul>li{
+        margin-bottom: auto;
+        margin-left: auto;
+    }
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+    .nav-right:before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
+        background: url("https://i.loli.net/2019/07/22/5d3521411f3f169375.png");
+        background-repeat: no-repeat;
+        background-position: 50% 0;
+        -ms-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -webkit-background-size: cover;
+        background-size: cover;
+    }
+    
+
+    
+</style>
+
+
+
+
+
+
+
+</html>
