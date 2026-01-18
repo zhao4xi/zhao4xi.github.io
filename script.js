@@ -1324,7 +1324,7 @@ function initSearch() {
     if (!searchInput || !searchDropdown) return;
     
     let highlightedIndex = -1;
-    let dropdownItems = [];
+    let dropdownItems = [];``
     
     // 显示搜索下拉列表
     function showDropdown(history, suggestions) {
@@ -1335,6 +1335,29 @@ function initSearch() {
         dropdownItems = [];
         highlightedIndex = -1;
         
+        // 添加自动补全部分
+        if (suggestions.length > 0) {
+            const suggestionSection = document.createElement('div');
+            suggestionSection.className = 'search-dropdown-section';
+            suggestionSection.textContent = '自动补全';
+            searchDropdown.appendChild(suggestionSection);
+            
+            suggestions.forEach(item => {
+                const dropdownItem = document.createElement('div');
+                dropdownItem.className = 'search-dropdown-item';
+                dropdownItem.textContent = item;
+                dropdownItem.dataset.type = 'suggestion';
+                dropdownItem.addEventListener('click', function() {
+                    searchInput.value = item;
+                    saveSearchHistory(item);
+                    showCrateList(item);
+                    hideDropdown();
+                });
+                searchDropdown.appendChild(dropdownItem);
+                dropdownItems.push(dropdownItem);
+            });
+        }
+
         // 添加历史记录部分
         if (history.length > 0) {
             console.log('Adding history section with', history.length, 'items');
@@ -1361,28 +1384,7 @@ function initSearch() {
             console.log('No history items to show');
         }
         
-        // 添加自动补全部分
-        if (suggestions.length > 0) {
-            const suggestionSection = document.createElement('div');
-            suggestionSection.className = 'search-dropdown-section';
-            suggestionSection.textContent = '自动补全';
-            searchDropdown.appendChild(suggestionSection);
-            
-            suggestions.forEach(item => {
-                const dropdownItem = document.createElement('div');
-                dropdownItem.className = 'search-dropdown-item';
-                dropdownItem.textContent = item;
-                dropdownItem.dataset.type = 'suggestion';
-                dropdownItem.addEventListener('click', function() {
-                    searchInput.value = item;
-                    saveSearchHistory(item);
-                    showCrateList(item);
-                    hideDropdown();
-                });
-                searchDropdown.appendChild(dropdownItem);
-                dropdownItems.push(dropdownItem);
-            });
-        }
+        
         
         if (dropdownItems.length > 0) {
             searchDropdown.classList.add('show');
@@ -1571,6 +1573,7 @@ function saveSearchHistory(item) {
 // 从localStorage获取历史记录
 function getSearchHistory() {
     try {
+        return [];
         const history = localStorage.getItem('searchHistory');
         const parsedHistory = history ? JSON.parse(history) : [];
         // 确保返回的是字符串数组，并且过滤掉空字符串
