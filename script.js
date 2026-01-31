@@ -1645,6 +1645,21 @@ function showCrateDetail(crateName) {
     gradeOrder.forEach(grade => {
         if (crateData[grade]) {
             const weapons = crateData[grade];
+
+            weapons.sort((a, b) => {
+            // 获取两个武器对应的max值
+            const weaponDataA = findWeaponData(a);
+            const weaponDataB = findWeaponData(b);
+            const maxA = weaponDataA?.max || 0; // 兼容无数据的情况
+            const maxB = weaponDataB?.max || 0;
+
+            // 1. max不同：降序排列（大的在前）
+                if (maxA !== maxB) {
+                    return maxB - maxA;
+                } 
+                return 0;
+            });
+
             if (weapons.length > 0) {
                 const section = document.createElement('div');
                 section.className = 'weapon-section';
