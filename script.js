@@ -333,14 +333,14 @@ function initCrateInput(inputId, dropdownId, qualityId, weaponId, wearId, wearVa
             if (inputId === 'crate-input-3' && mainQuality) {
                 const crateData = crateDatabase[crateName];
                 if (crateData && crateData[mainQuality] && crateData[mainQuality].length > 0) {
-                    if (!query || crateName.toLowerCase().includes(lowerQuery)) {
+                    if (!query || (crateName.toLowerCase().includes(lowerQuery) && !crateName.toLowerCase().includes('纪念包'))) {
                         suggestions.push(crateName);
                         if (suggestions.length >= 10) break;
                     }
                 }
             } else {
                 // 其他情况，显示所有匹配的武器箱
-                if (!query || crateName.toLowerCase().includes(lowerQuery)) {
+                if (!query || (crateName.toLowerCase().includes(lowerQuery)&& !crateName.toLowerCase().includes('纪念包'))) {
                     suggestions.push(crateName);
                     if (suggestions.length >= 10) break;
                 }
@@ -1424,7 +1424,8 @@ function initSearch() {
         }
 
         for (const crateName in window.crateDatabase) {
-            if (window.crateDatabase.hasOwnProperty(crateName) && crateName.toLowerCase().includes(lowerQuery)) {
+            if (window.crateDatabase.hasOwnProperty(crateName) && crateName.toLowerCase().includes(lowerQuery) && 
+        !crateName.contains('纪念包')) {
                 suggestions.push(crateName);
                 if (suggestions.length >= 5) break;
             }
@@ -1434,7 +1435,7 @@ function initSearch() {
     }
 
     // 处理输入框获得焦点事件 - 显示最近搜索
-    searchInput.addEventListener('focus', function () {
+    /*searchInput.addEventListener('focus', function () {
         const query = this.value.trim();
         const history = getSearchHistory();
         const suggestions = getSuggestions(query);
@@ -1446,7 +1447,7 @@ function initSearch() {
             // 输入框有内容时，显示最近搜索和自动补全
             showDropdown(history, suggestions);
         }
-    });
+    });*/
 
     // 处理输入事件 - 显示自动补全
     searchInput.addEventListener('input', function () {
