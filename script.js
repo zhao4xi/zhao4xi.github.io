@@ -149,7 +149,7 @@ function showCalculatorPage() {
 
                     <div class="form-group">
                         <label for="material-input">材料:</label>
-                        <textarea id="material-input" placeholder="材料内容" disabled rows="8"></textarea>
+                        <textarea id="material-input" placeholder="材料内容" disabled rows="10"></textarea>
                     </div>
                 </div>
                 <button id="calculate-btn">计算</button>
@@ -1677,7 +1677,7 @@ function showCrateDetail(crateName) {
                 weapons.forEach(weaponName => {
                     // 查找武器在materials-data中的数据
                     const weaponData = findWeaponData(weaponName);
-                    const minMaxText = weaponData ? `${weaponData.min.toFixed(4)}-${weaponData.max.toFixed(4)}` : '';
+                    const minMaxText = weaponData ? `${weaponData.min.toFixed(2)}-${weaponData.max.toFixed(2)}` : '';
 
                     const weaponItem = document.createElement('div');
                     weaponItem.className = 'weapon-item';
