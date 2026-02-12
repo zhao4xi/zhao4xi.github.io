@@ -631,7 +631,7 @@ function initCrateInput(inputId, dropdownId, qualityId, weaponId, wearId, wearVa
                         wearValueInput.max = wear.Max;
                         // 设置默认值为 Max - 0.001
                         const defaultValue = parseFloat(wear.Max) - 0.001;
-                        wearValueInput.value = defaultValue.toFixed(3);
+                        wearValueInput.value = defaultValue.toFixed(4);
                         break;
                     }
                 }
@@ -1141,7 +1141,7 @@ function calculateSuitableWeapons() {
             const clampedWear = Math.max(materialMin, Math.min(materialMax, materialWear));
 
             // 格式化磨损值，保留三位小数
-            const formattedWear = clampedWear.toFixed(3);
+            const formattedWear = clampedWear.toFixed(4);
 
             // 添加到材料内容
             materialContent += `${weapon} ： ${formattedWear}\n`;
@@ -1677,7 +1677,7 @@ function showCrateDetail(crateName) {
                 weapons.forEach(weaponName => {
                     // 查找武器在materials-data中的数据
                     const weaponData = findWeaponData(weaponName);
-                    const minMaxText = weaponData ? `${weaponData.min.toFixed(2)}-${weaponData.max.toFixed(2)}` : '';
+                    const minMaxText = weaponData ? `${weaponData.min.toFixed(4)}-${weaponData.max.toFixed(4)}` : '';
 
                     const weaponItem = document.createElement('div');
                     weaponItem.className = 'weapon-item';
@@ -1753,8 +1753,8 @@ function calculateOtherWear(weaponList, currentInput, baseWear) {
                 // 计算目标武器的磨损值
                 let targetWear = normalizedValue * (targetMax - targetMin) + targetMin;
                 // 确保最小值为0.001，不会小于0
-                targetWear = Math.max(targetWear, 0.001);
-                input.value = targetWear.toFixed(3);
+                targetWear = Math.max(targetWear, 0.0001);
+                input.value = targetWear.toFixed(4);
             } else {
                 // 如果没有磨损范围，留白
                 input.value = '';
